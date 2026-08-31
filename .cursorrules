@@ -1,0 +1,57 @@
+# FocusLock — Cursor & AI Agent Rules
+
+## 1. Core Mission & Philosophy
+FocusLock is an Android digital self-control application built with Kotlin and Jetpack Compose.
+The application's source of truth is the provided Figma UI designs (located in `Pages Designs/`) and `prd.md`.
+
+---
+
+## 2. Strict Sequential Phase Execution
+1. Development MUST follow the 15-phase roadmap defined in `phases.md` strictly in sequential order (Phase 1 → Phase 2 → ... → Phase 15).
+2. NEVER skip, combine, or develop future phases in parallel.
+3. Every phase must be implemented, verified, and confirmed COMPLETE before advancing to the next phase.
+4. At the completion of every phase, output the Phase Status Report:
+   ```text
+   PHASE: [Phase Number] - [Phase Name]
+   STATUS: [COMPLETE / BLOCKED]
+   IMPLEMENTED: [Key items built]
+   TESTED: [Verification steps performed]
+   KNOWN LIMITATIONS: [Any known limitations]
+   NEXT PHASE: [Next Phase Number & Name]
+   ```
+
+---
+
+## 3. UI & Design System Rules (Figma is Truth)
+1. **Never redesign or invent layouts:** Match the spacing, typography, card radius, colors, and layout from `Pages Designs/` and `design.md`.
+2. **Palette Standards:**
+   - Background: `#FAF3EC` (Warm Canvas)
+   - Primary Accent: `#FF6B2C` (Orange)
+   - Dark Surface: `#141A21` (Slate Navy)
+   - Card Background: `#FFFFFF`
+   - Borders: `#EAE1D8`
+3. **Typography Standards:**
+   - Headings & Large Numbers: Outfit
+   - Body & UI Labels: Geist / Inter
+4. **Bottom Bar:** 5-tab dark slate navigation (`#141A21`) with prominent center orange `+` button.
+
+---
+
+## 4. Technical Constraints & Code Quality
+1. **Language & Framework:** Kotlin, Jetpack Compose, Material3 foundations customized to design tokens.
+2. **Architecture:** Clean Architecture + MVVM/MVI + StateFlow (Unidirectional Data Flow).
+3. **Persistence:** Room Database for sessions and history. Never use in-memory-only counters for lock timers.
+4. **Timer Calculations:** Always calculate remaining time using absolute timestamps (`endsAt - System.currentTimeMillis()`) so that timers persist across app kills, backgrounding, and device reboots.
+5. **No Fake Implementations:**
+   - Do not claim unbreakable system locks that violate Android sandbox rules.
+   - Implement genuine Android capabilities (AccessibilityService, ForegroundService, UsageStats, Overlay) with graceful fallbacks.
+   - Never collect, store, or transmit user credentials, private chats, or browsing logs.
+
+---
+
+## 5. File Organization
+- `phases.md` — 15-phase master plan and tracking.
+- `design.md` — Design tokens, typography, and component specifications.
+- `architecture.md` — System architecture, module structure, and database schemas.
+- `security_and_review.md` — Security guidelines, privacy standards, and review checkpoints.
+- `prd.md` — Master Product Requirement Document.
