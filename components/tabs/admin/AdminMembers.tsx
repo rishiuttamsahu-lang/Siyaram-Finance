@@ -243,8 +243,13 @@ export const AdminMembers: React.FC<AdminMembersProps> = ({
         })}
 
         {filteredDues.length === 0 && (
-          <div className="p-6 text-center text-xs text-slate-400 glass-card rounded-2xl border border-slate-200/80">
-            No members found matching &quot;{searchQuery}&quot;
+          <div className="p-8 text-center text-xs text-slate-400 glass-card rounded-2xl border border-slate-200/80 space-y-1">
+            <p className="font-semibold text-slate-700">
+              {members.length === 0 ? 'No members added yet' : `No members found matching "${searchQuery}"`}
+            </p>
+            <p className="text-[11px] text-slate-400">
+              {members.length === 0 ? 'Tap "+ Add" or deploy Mandal Snapshot to enroll members.' : 'Try adjusting your search or filter criteria.'}
+            </p>
           </div>
         )}
       </div>

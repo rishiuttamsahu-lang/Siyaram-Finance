@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 import { Building, Flat } from '../../lib/types';
 import { formatINR } from '../../lib/finance';
-import { CheckCircle2, Layers } from 'lucide-react';
+import { CheckCircle2, Layers, Building2 } from 'lucide-react';
 
 interface BuildingsTabProps {
   buildings: Building[];
@@ -66,13 +66,26 @@ export const BuildingsTab: React.FC<BuildingsTabProps> = ({
 
   return (
     <div className="space-y-3 sm:space-y-4 pb-24">
-      {/* 1. Top 3 Summary Gauges - Concise & Compact on Mobile */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
-        {/* Total Collection */}
-        <div className="glass-card rounded-2xl sm:rounded-3xl p-3 sm:p-4 flex flex-col justify-between">
-          <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">
-            COLLECTION
-          </span>
+      {buildings.length === 0 ? (
+        <div className="p-8 text-center rounded-2xl bg-white border border-slate-100 space-y-2">
+          <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center mx-auto">
+            <Building2 size={20} />
+          </div>
+          <h4 className="text-xs font-bold text-slate-700">No Wings Added Yet</h4>
+          <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
+            All dummy data has been removed. Sign in as Admin to deploy the Mandal Snapshot or add wings.
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* 1. Top 3 Summary Gauges - Concise & Compact on Mobile */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
+            {/* Total Collection */}
+            <div className="glass-card rounded-2xl sm:rounded-3xl p-3 sm:p-4 flex flex-col justify-between">
+              <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">
+                COLLECTION
+              </span>
+
           <div className="text-base sm:text-2xl font-bold text-emerald-600 tabular-numbers mt-0.5 sm:mt-1">
             {formatINR(aggregates.totalCollection)}
           </div>
@@ -283,6 +296,9 @@ export const BuildingsTab: React.FC<BuildingsTabProps> = ({
           </div>
         </div>
       )}
+        </>
+      )}
     </div>
   );
 };
+

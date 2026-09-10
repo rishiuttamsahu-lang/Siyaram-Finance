@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Building, Floor, Flat } from '../../../lib/types';
 import { formatINR } from '../../../lib/finance';
 import {
@@ -29,8 +29,17 @@ export const AdminBuildings: React.FC<AdminBuildingsProps> = ({
   isAddWingModalOpen: externalIsAddWingOpen,
   setIsAddWingModalOpen: externalSetIsAddWingOpen,
 }) => {
-  const [buildingsList, setBuildingsList] = useState<Building[]>(initialBuildings);
+  const [buildingsList, setBuildingsList] = useState<Building[]>(initialBuildings || []);
   const [selectedBuildingId, setSelectedBuildingId] = useState<string>(initialBuildings[0]?.id || '');
+
+  useEffect(() => {
+    setBuildingsList(initialBuildings || []);
+    if (initialBuildings && initialBuildings.length > 0) {
+      setSelectedBuildingId(prev => prev && initialBuildings.some(b => b.id === prev) ? prev : initialBuildings[0].id);
+    } else {
+      setSelectedBuildingId('');
+    }
+  }, [initialBuildings]);
 
   // Add Wing Modal
   const [internalIsAddWingOpen, setInternalIsAddWingOpen] = useState(false);
@@ -239,6 +248,10 @@ export const AdminBuildings: React.FC<AdminBuildingsProps> = ({
               </button>
             );
           })}
+
+          {buildingsList.length === 0 && (
+            <span className="text-xs text-slate-400 py-1">No wings configured yet. Tap &quot;+ Add Wing&quot; or deploy Snapshot.</span>
+          )}
         </div>
       </div>
 
@@ -393,6 +406,12 @@ export const AdminBuildings: React.FC<AdminBuildingsProps> = ({
               );
             })}
           </div>
+        </div>
+      )}
+
+      {!selectedBuilding && (
+        <div className="glass-card rounded-2xl p-8 text-center text-slate-400 text-xs border border-slate-200/80">
+          No wings configured. Tap &quot;+ Add Wing&quot; to create a building wing.
         </div>
       )}
 

@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { Member, Season, PaymentMode } from '../../lib/types';
 import { formatINR, computeMemberDue, getEffectiveMonthTarget } from '../../lib/finance';
 import { MicroChart } from '../MicroChart';
-import { Search, ChevronDown, ChevronUp, PlusCircle, ArrowUpDown, Table, LayoutList, CheckCircle2, AlertCircle, Ban } from 'lucide-react';
+import { Search, ChevronDown, ChevronUp, PlusCircle, ArrowUpDown, Table, LayoutList, CheckCircle2, AlertCircle, Ban, Users } from 'lucide-react';
 
 interface MembersTabProps {
   season: Season;
@@ -209,15 +209,27 @@ export const MembersTab: React.FC<MembersTabProps> = ({
       {viewMode === 'cards' ? (
         /* Mobile-First Expandable Card List (UI Preference 1, 2, 4, 5 style) */
         <div className="space-y-2.5">
-          {filteredMembers.map(({ member, dueSummary }) => {
-            const isExpanded = expandedMemberId === member.id;
-            const hasDue = dueSummary.totalPending > 0;
+          {filteredMembers.length === 0 ? (
+            <div className="p-8 text-center rounded-2xl bg-white border border-slate-100 space-y-2">
+              <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center mx-auto">
+                <Users size={20} />
+              </div>
+              <h4 className="text-xs font-bold text-slate-700">No Members Added Yet</h4>
+              <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
+                All dummy data has been removed. Sign in as Admin to deploy the Mandal Snapshot or add members.
+              </p>
+            </div>
+          ) : (
+            filteredMembers.map(({ member, dueSummary }) => {
+              const isExpanded = expandedMemberId === member.id;
+              const hasDue = dueSummary.totalPending > 0;
 
-            return (
-              <div
-                key={member.id}
-                className="glass-card rounded-[24px] p-3.5 sm:p-4 transition-all duration-200 border border-white/80"
-              >
+              return (
+                <div
+                  key={member.id}
+                  className="glass-card rounded-[24px] p-3.5 sm:p-4 transition-all duration-200 border border-white/80"
+                >
+
                 {/* Main Row */}
                 <div className="flex items-center justify-between gap-3">
                   {/* Left: Avatar & Name */}
@@ -364,8 +376,9 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                 )}
               </div>
             );
-          })}
-        </div>
+          })
+        )}
+      </div>
       ) : (
         /* Desktop Excel-Style Dense Grid (PRD §6.1 & conversation table) */
         <div className="glass-card rounded-3xl p-4 overflow-x-auto no-scrollbar">

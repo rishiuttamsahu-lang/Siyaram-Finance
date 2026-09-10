@@ -460,7 +460,7 @@ export const AdminMonthlyDues: React.FC<AdminMonthlyDuesProps> = ({
 
           {filteredMembers.length === 0 && (
             <div className="p-4 text-center text-xs text-slate-400">
-              No members found matching "{memberSearch}".
+              {members.length === 0 ? 'No members enrolled yet. Tap "+ Add" in Members tab or deploy Snapshot.' : `No members found matching "${memberSearch}".`}
             </div>
           )}
         </div>

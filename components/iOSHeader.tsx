@@ -49,8 +49,9 @@ export const IOSHeader: React.FC<IOSHeaderProps> = ({
             ) : null}
           </button>
           <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/50">
-            {season.id}
+            {season.id || 'Setup Pending'}
           </span>
+
         </div>
 
         {/* Right side control: Total Net Balance Badge */}

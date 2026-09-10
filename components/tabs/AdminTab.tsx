@@ -12,8 +12,10 @@ import {
   RefreshCw,
   ShieldCheck,
   History,
-  Plus
+  Plus,
+  Sparkles
 } from 'lucide-react';
+
 
 import { AdminDashboard } from './admin/AdminDashboard';
 import { SeasonsManager } from './SeasonsManager';
@@ -43,6 +45,7 @@ interface AdminTabProps {
   onDeleteMonth?: (month: string) => void;
   onUpdateDefaultQuota?: (newQuota: number) => void;
   onSetMemberMonthOverride?: (memberId: string, month: string, amount: number | null) => void;
+  onOpenSnapshotModal?: () => void;
 }
 
 export type AdminSubTab = 
@@ -74,6 +77,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
   onDeleteMonth,
   onUpdateDefaultQuota,
   onSetMemberMonthOverride,
+  onOpenSnapshotModal,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<AdminSubTab>('dashboard');
 
@@ -126,6 +130,29 @@ export const AdminTab: React.FC<AdminTabProps> = ({
 
   return (
     <div className="space-y-3 pb-28">
+      {/* Database Empty Banner / Snapshot Deploy CTA */}
+      {(!season.id || members.length === 0) && onOpenSnapshotModal && (
+        <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-teal-500/10 to-emerald-500/10 border border-emerald-200/80 flex items-center justify-between gap-3 flex-wrap animate-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+              <Sparkles size={16} />
+            </div>
+            <div>
+              <h4 className="text-xs sm:text-sm font-bold text-slate-900">Firestore is Empty</h4>
+              <p className="text-[11px] text-slate-600">Deploy Mandal Snapshot with Previous Balance & Entities in 1 click.</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onOpenSnapshotModal}
+            className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs active:scale-95 transition flex items-center gap-1.5 cursor-pointer"
+          >
+            <Sparkles size={13} />
+            <span>Deploy Snapshot</span>
+          </button>
+        </div>
+      )}
+
       {/* Clean Mobile-First Header */}
       <div className="rounded-2xl p-3 sm:p-4 border transition-all glass-card border-slate-200/80">
         <div className="flex items-center justify-between">
@@ -141,6 +168,17 @@ export const AdminTab: React.FC<AdminTabProps> = ({
           </div>
 
           {/* Contextual Action Button */}
+          {activeSubTab === 'dashboard' && onOpenSnapshotModal && (
+            <button
+              type="button"
+              onClick={onOpenSnapshotModal}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-2xs active:scale-95 transition cursor-pointer"
+            >
+              <Sparkles size={13} />
+              <span>Snapshot</span>
+            </button>
+          )}
+
           {activeSubTab === 'seasons' && (
             <button
               type="button"

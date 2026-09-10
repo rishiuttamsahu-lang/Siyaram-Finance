@@ -32,11 +32,7 @@ interface WebAdmin {
 
 export const AdminUsersAudit: React.FC = () => {
   // Telegram Admin Allowlist
-  const [telegramAdmins, setTelegramAdmins] = useState<TelegramAdmin[]>([
-    { id: 'tg-1', telegramId: '71982341', username: '@rishikesh_dev', role: 'Owner', addedAt: 'Aug 1', lastCommand: '/status · 10m ago' },
-    { id: 'tg-2', telegramId: '89234812', username: '@piyush_siyaram', role: 'Admin', addedAt: 'Aug 15', lastCommand: '+₹500 chanda · 1h ago' },
-    { id: 'tg-3', telegramId: '54129038', username: '@lucky_patel', role: 'Collector', addedAt: 'Sep 1', lastCommand: '+₹200 flat A-101 · 3h ago' },
-  ]);
+  const [telegramAdmins, setTelegramAdmins] = useState<TelegramAdmin[]>([]);
 
   // Google Web Admin Allowlist
   const [webAdmins, setWebAdmins] = useState<WebAdmin[]>([
@@ -257,6 +253,12 @@ export const AdminUsersAudit: React.FC = () => {
               </div>
             );
           })}
+
+          {telegramAdmins.length === 0 && (
+            <div className="p-4 text-center text-slate-400 text-xs">
+              No Telegram admins registered yet. Tap &quot;+ Add&quot; to authorize users.
+            </div>
+          )}
         </div>
       </div>
 

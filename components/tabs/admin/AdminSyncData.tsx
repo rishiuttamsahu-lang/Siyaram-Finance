@@ -57,10 +57,7 @@ export const AdminSyncData: React.FC<AdminSyncDataProps> = ({
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
 
   // Backup Snapshots state
-  const [snapshots, setSnapshots] = useState([
-    { id: 'snap-1', date: '08 Sep', size: '24 KB', note: 'Pre-Ganpati', filename: 'siyaram-backup-20260908.json' },
-    { id: 'snap-2', date: '01 Sep', size: '21 KB', note: 'Season opening', filename: 'siyaram-backup-20260901.json' },
-  ]);
+  const [snapshots, setSnapshots] = useState<{ id: string; date: string; size: string; note: string; filename: string }[]>([]);
   const [isCreatingSnapshot, setIsCreatingSnapshot] = useState(false);
 
   // Import / Restore Modal & Confirmation
@@ -362,6 +359,12 @@ export const AdminSyncData: React.FC<AdminSyncDataProps> = ({
               </button>
             </div>
           ))}
+
+          {snapshots.length === 0 && (
+            <div className="p-3 text-center text-slate-400 text-xs">
+              No snapshots created yet. Tap &quot;+ New&quot; to take a backup snapshot.
+            </div>
+          )}
         </div>
       </div>
 

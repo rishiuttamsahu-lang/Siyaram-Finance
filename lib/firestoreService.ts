@@ -24,17 +24,50 @@ export const COLLECTIONS = {
 /**
  * Subscribe to the active Season document in real-time.
  */
-export function subscribeToSeason(
-  seasonId: string, 
-  onData: (season: Season) => void,
+export function subscribeToActiveSeason(
+  onData: (season: Season | null) => void,
   onError?: (err: FirestoreError) => void
 ): Unsubscribe | null {
   if (!db) return null;
+  try {
+    const seasonsRef = collection(db, COLLECTIONS.SEASONS);
+    return onSnapshot(seasonsRef, (snapshot) => {
+      if (!snapshot.empty) {
+        let active: Season | null = null;
+        snapshot.forEach((d) => {
+          const s = d.data() as Season;
+          if (s.isActive || !active) active = s;
+        });
+        onData(active);
+      } else {
+        onData(null);
+      }
+    }, (error) => {
+      console.warn('Firestore active season listener notice:', error.message);
+      onError?.(error);
+    });
+  } catch (err: any) {
+    console.warn('Firestore subscribeToActiveSeason failed:', err);
+    return null;
+  }
+}
+
+export function subscribeToSeason(
+  seasonId: string, 
+  onData: (season: Season | null) => void,
+  onError?: (err: FirestoreError) => void
+): Unsubscribe | null {
+  if (!db || !seasonId) {
+    onData(null);
+    return null;
+  }
   try {
     const seasonRef = doc(db, COLLECTIONS.SEASONS, seasonId);
     return onSnapshot(seasonRef, (snapshot) => {
       if (snapshot.exists()) {
         onData(snapshot.data() as Season);
+      } else {
+        onData(null);
       }
     }, (error) => {
       console.warn('Firestore Season snapshot listener notice:', error.message);
@@ -57,11 +90,11 @@ export function subscribeToMembers(
   try {
     const membersRef = collection(db, COLLECTIONS.MEMBERS);
     return onSnapshot(membersRef, (snapshot) => {
+      const list: Member[] = [];
       if (!snapshot.empty) {
-        const list: Member[] = [];
         snapshot.forEach((d) => list.push(d.data() as Member));
-        onData(list);
       }
+      onData(list);
     }, (error) => {
       console.warn('Firestore Members snapshot listener notice:', error.message);
       onError?.(error);
@@ -83,11 +116,11 @@ export function subscribeToBuildings(
   try {
     const buildingsRef = collection(db, COLLECTIONS.BUILDINGS);
     return onSnapshot(buildingsRef, (snapshot) => {
+      const list: Building[] = [];
       if (!snapshot.empty) {
-        const list: Building[] = [];
         snapshot.forEach((d) => list.push(d.data() as Building));
-        onData(list);
       }
+      onData(list);
     }, (error) => {
       console.warn('Firestore Buildings snapshot listener notice:', error.message);
       onError?.(error);
@@ -236,3 +269,40 @@ export async function saveAuditLogToFirestore(log: AuditLog): Promise<void> {
     throw err;
   }
 }
+
+/**
+ * Deploy complete snapshot to Firestore (Season, Members, Buildings).
+ */
+export async function deploySnapshotToFirestore(
+  season: Season,
+  members: Member[],
+  buildings: Building[]
+): Promise<void> {
+  if (!db) throw new Error('Firestore is not initialized');
+  
+  // 1. Save Season
+  await saveSeasonToFirestore(season);
+
+  // 2. Save Members
+  for (const m of members) {
+    await saveMemberToFirestore(m);
+  }
+
+  // 3. Save Buildings
+  for (const b of buildings) {
+    await saveBuildingToFirestore(b);
+  }
+
+  // 4. Initial Audit Log
+  const initAudit: AuditLog = {
+    id: `log-${Date.now()}`,
+    action: 'CREATE',
+    previousValue: null,
+    newValue: { seasonId: season.id, openingBalance: season.openingBalance, membersCount: members.length, buildingsCount: buildings.length },
+    performedBy: 'Admin:SnapshotDeployer',
+    timestamp: new Date().toISOString(),
+    notes: `Initial snapshot deployed to Firestore with Opening Balance ₹${season.openingBalance}`,
+  };
+  await saveAuditLogToFirestore(initAudit);
+}
+

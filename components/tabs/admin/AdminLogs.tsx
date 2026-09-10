@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuditLog, Transaction } from '../../../lib/types';
 import { formatINR } from '../../../lib/finance';
 import {
@@ -29,105 +29,14 @@ export const AdminLogs: React.FC<AdminLogsProps> = ({
   transactions,
   onRetrySync,
 }) => {
-  // Pure system & administrative audit logs (no duplicate financial income/expense transactions)
-  const sampleLogs: AuditLog[] = [
-    {
-      id: 'log-01',
-      txnId: 'txn-03',
-      action: 'UPDATE',
-      type: 'EDIT',
-      source: 'WEB',
-      name: 'Tailor Chanda Correction',
-      amount: 200,
-      mode: 'OFFLINE',
-      performedBy: 'Admin:Rishikesh',
-      timestamp: '2026-09-08T23:00:00.000Z',
-      syncStatus: 'SYNCED',
-      notes: 'Physical receipt correction: amount updated from ₹150 to ₹200',
-      previousValue: { amount: 150, description: 'Tailor Chanda' },
-      newValue: { amount: 200, description: 'Tailor Chanda' },
-    },
-    {
-      id: 'log-02',
-      txnId: 'txn-1040',
-      action: 'UNDO',
-      type: 'UNDO',
-      source: 'WEB',
-      name: 'Reversal: Duplicate Txn #1040',
-      amount: 250,
-      mode: 'ONLINE',
-      performedBy: 'Admin:Rishikesh',
-      timestamp: '2026-09-08T19:40:00.000Z',
-      syncStatus: 'SYNCED',
-      notes: 'Reversed duplicate entry (#1040 undo) - status flipped to REVERSED',
-      previousValue: { id: 'txn-1040', amount: 250, status: 'ACTIVE' },
-      newValue: { id: 'txn-1040', amount: 250, status: 'REVERSED' },
-    },
-    {
-      id: 'log-03',
-      txnId: 'txn-1043',
-      action: 'CREATE',
-      type: 'EDIT',
-      source: 'WEB',
-      name: 'Google Sheets Mirror Timeout',
-      amount: 500,
-      mode: 'OFFLINE',
-      performedBy: 'CloudflareWorker',
-      timestamp: '2026-09-09T16:45:00.000Z',
-      syncStatus: 'FAILED',
-      notes: 'Rate limit timeout while mirroring to Google Sheets. Ready to retry.',
-      previousValue: null,
-      newValue: { expense: 'Decoration', amount: 500, mode: 'OFFLINE' },
-    },
-    {
-      id: 'log-04',
-      action: 'ROLLOVER',
-      type: 'ROLLOVER',
-      source: 'WEB',
-      name: 'Season Rollover 2026–27',
-      performedBy: 'Admin:RolloverWizard',
-      timestamp: '2026-09-01T00:00:00.000Z',
-      syncStatus: 'SYNCED',
-      notes: 'Ganesh Utsav 2026–27 committed. Opening balance set to ₹6,500',
-      previousValue: { season: '2025-2026' },
-      newValue: { season: '2026-2027', openingBalance: 6500 },
-    },
-    {
-      id: 'log-05',
-      action: 'UPDATE',
-      type: 'EDIT',
-      source: 'WEB',
-      name: 'A-301 Resident Assignment',
-      performedBy: 'Admin:Rishikesh',
-      timestamp: '2026-09-08T15:00:00.000Z',
-      syncStatus: 'SYNCED',
-      notes: 'Assigned resident Sharma Ji to flat A-301',
-      previousValue: { flatNo: '301', residentName: '' },
-      newValue: { flatNo: '301', residentName: 'Sharma Ji' },
-    },
-    {
-      id: 'log-06',
-      action: 'UPDATE',
-      type: 'EDIT',
-      source: 'TEL',
-      name: 'Telegram Webhook Healthcheck',
-      performedBy: 'TelegramBot',
-      timestamp: '2026-09-08T12:00:00.000Z',
-      syncStatus: 'SYNCED',
-      notes: 'Edge Webhook endpoint validated with Telegram Cloud API (latency: 34ms)',
-      previousValue: null,
-      newValue: { status: 'healthy', latencyMs: 34 },
-    },
-  ];
-
-  // Filter out any pure financial income/expense transactions from audit logs
-  const baseLogs = (initialLogs && initialLogs.length > 0 ? initialLogs : sampleLogs).filter(
-    l => l.type !== 'INCOME' && l.type !== 'EXPENSE'
+  // Pure system & administrative audit logs
+  const [logsList, setLogsList] = useState<AuditLog[]>(() =>
+    (initialLogs || []).filter(l => l.type !== 'INCOME' && l.type !== 'EXPENSE')
   );
 
-  const [logsList, setLogsList] = useState<AuditLog[]>(
-    baseLogs.length > 0 ? baseLogs : sampleLogs
-  );
+  useEffect(() => {
+    setLogsList((initialLogs || []).filter(l => l.type !== 'INCOME' && l.type !== 'EXPENSE'));
+  }, [initialLogs]);
 
   // Search & Filtering
   const [searchQuery, setSearchQuery] = useState('');

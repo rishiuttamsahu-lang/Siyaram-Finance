@@ -39,7 +39,10 @@ import { ExpenseTab } from '../components/tabs/ExpenseTab';
 import { AdminTab } from '../components/tabs/AdminTab';
 import { NumericKeypadModal } from '../components/NumericKeypadModal';
 import { AuthModal } from '../components/AuthModal';
+import { SnapshotDeployModal } from '../components/SnapshotDeployModal';
+
 import {
+  subscribeToActiveSeason,
   subscribeToSeason,
   subscribeToMembers,
   subscribeToBuildings,
@@ -71,6 +74,8 @@ export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState<boolean>(false);
+
 
   // Listen for Google Auth state changes
   useEffect(() => {
@@ -88,20 +93,24 @@ export default function Home() {
 
   // Real-time Firestore synchronization
   useEffect(() => {
-    const unsubSeason = subscribeToSeason(season.id, (cloudSeason) => {
-      if (cloudSeason) setSeason(cloudSeason);
+    const unsubSeason = subscribeToActiveSeason((cloudSeason) => {
+      if (cloudSeason) {
+        setSeason(cloudSeason);
+      } else {
+        setSeason(initialSeason);
+      }
     });
     const unsubMembers = subscribeToMembers((cloudMembers) => {
-      if (cloudMembers && cloudMembers.length > 0) setMembers(cloudMembers);
+      setMembers(cloudMembers || []);
     });
     const unsubBuildings = subscribeToBuildings((cloudBuildings) => {
-      if (cloudBuildings && cloudBuildings.length > 0) setBuildings(cloudBuildings);
+      setBuildings(cloudBuildings || []);
     });
     const unsubTxns = subscribeToTransactions((cloudTxns) => {
-      setTransactions(cloudTxns);
+      setTransactions(cloudTxns || []);
     });
     const unsubLogs = subscribeToAuditLogs((cloudLogs) => {
-      setAuditLogs(cloudLogs);
+      setAuditLogs(cloudLogs || []);
     });
 
     return () => {
@@ -111,7 +120,7 @@ export default function Home() {
       unsubTxns?.();
       unsubLogs?.();
     };
-  }, [season.id]);
+  }, []);
 
   // Keypad Modal State
   const [keypadConfig, setKeypadConfig] = useState<{
@@ -653,6 +662,7 @@ export default function Home() {
               onDeleteMonth={handleDeleteMonth}
               onUpdateDefaultQuota={handleUpdateDefaultQuota}
               onSetMemberMonthOverride={handleSetMemberMonthOverride}
+              onOpenSnapshotModal={() => setIsSnapshotModalOpen(true)}
             />
           )}
         </div>
@@ -684,6 +694,18 @@ export default function Home() {
           }
         }}
       />
+
+      {/* Firebase Database Snapshot Setup Modal */}
+      <SnapshotDeployModal
+        isOpen={isSnapshotModalOpen}
+        onClose={() => setIsSnapshotModalOpen(false)}
+        onDeploySuccess={(newSeason, newMembers, newBuildings) => {
+          setSeason(newSeason);
+          setMembers(newMembers);
+          setBuildings(newBuildings);
+        }}
+      />
+
 
       {/* iOS Numeric Keypad Modal for Frictionless Field Entry */}
       <NumericKeypadModal

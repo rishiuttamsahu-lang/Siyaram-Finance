@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Season, Member, Transaction, AuditLog, Building } from '../../lib/types';
 import { formatINR, calculateMandalTotals, computeMemberDue } from '../../lib/finance';
 import {
@@ -73,56 +73,52 @@ export const SeasonsManager: React.FC<SeasonsManagerProps> = ({
   const totalCurrentPending = memberDues.reduce((acc, d) => acc + d.currentSeasonPending, 0);
   const totalOverallPending = totalPreviousPending + totalCurrentPending;
 
-  // Seasons list
-  const [seasons, setSeasons] = useState<SeasonHistoryRecord[]>([
-    {
-      id: '2026-2027',
-      name: season.name || 'Ganesh Utsav 2026–27',
-      label: '2026–27',
-      startDate: 'Sep 2026',
-      endDate: 'Sep 2027',
-      status: 'Active',
-      openingBalance: season.openingBalance,
+  // Real seasons list derived solely from props
+  const [seasons, setSeasons] = useState<SeasonHistoryRecord[]>(() => {
+    if (!season.id) return [];
+    return [{
+      id: season.id,
+      name: season.name || season.id,
+      label: season.id,
+      startDate: season.startDate || '',
+      endDate: season.endDate || '',
+      status: season.isActive ? 'Active' : 'Closed',
+      openingBalance: season.openingBalance || 0,
       totalIncome: currentTotalIncome,
       totalExpense: currentTotalExpense,
       closingBalance: currentBalance,
       totalPending: totalOverallPending,
       pendingMembersCount: memberDues.filter(d => d.totalPending > 0).length,
-      isLive: true,
-    },
-    {
-      id: '2025-2026',
-      name: 'Ganesh Utsav 2025–26',
-      label: '2025–26',
-      startDate: 'Sep 2025',
-      endDate: 'Sep 2026',
-      status: 'Closed',
-      openingBalance: 4000,
-      totalIncome: 84200,
-      totalExpense: 77700,
-      closingBalance: 6500,
-      totalPending: 5200,
-      pendingMembersCount: 5,
-      isLive: false,
-    },
-    {
-      id: '2024-2025',
-      name: 'Ganesh Utsav 2024–25',
-      label: '2024–25',
-      startDate: 'Sep 2024',
-      endDate: 'Sep 2025',
-      status: 'Archived',
-      openingBalance: 2500,
-      totalIncome: 76000,
-      totalExpense: 73500,
-      closingBalance: 5000,
-      totalPending: 3800,
-      pendingMembersCount: 4,
-      isLive: false,
-    },
-  ]);
+      isLive: season.isActive,
+    }];
+  });
 
-  const [selectedSeasonId, setSelectedSeasonId] = useState<string>('2026-2027');
+  const [selectedSeasonId, setSelectedSeasonId] = useState<string>(season.id || '');
+
+  useEffect(() => {
+    if (!season.id) {
+      setSeasons([]);
+      setSelectedSeasonId('');
+      return;
+    }
+    const currentRec: SeasonHistoryRecord = {
+      id: season.id,
+      name: season.name || season.id,
+      label: season.id,
+      startDate: season.startDate || '',
+      endDate: season.endDate || '',
+      status: season.isActive ? 'Active' : 'Closed',
+      openingBalance: season.openingBalance || 0,
+      totalIncome: currentTotalIncome,
+      totalExpense: currentTotalExpense,
+      closingBalance: currentBalance,
+      totalPending: totalOverallPending,
+      pendingMembersCount: memberDues.filter(d => d.totalPending > 0).length,
+      isLive: season.isActive,
+    };
+    setSeasons([currentRec]);
+    setSelectedSeasonId(season.id);
+  }, [season.id, season.name, season.openingBalance, season.startDate, season.endDate, season.isActive, currentTotalIncome, currentTotalExpense, currentBalance, totalOverallPending]);
 
   // Sheet / Modal triggers
   const [internalCreateModal, setInternalCreateModal] = useState(false);
@@ -137,19 +133,19 @@ export const SeasonsManager: React.FC<SeasonsManagerProps> = ({
   const [memberSearchQuery, setMemberSearchQuery] = useState('');
 
   // Form states for creating a new season
-  const [newSeasonName, setNewSeasonName] = useState('Ganesh Utsav 2027–28');
-  const [newSeasonStart, setNewSeasonStart] = useState('2027-09');
-  const [newSeasonEnd, setNewSeasonEnd] = useState('2028-09');
-  const [newSeasonStatus, setNewSeasonStatus] = useState<'Active' | 'Draft'>('Draft');
+  const [newSeasonName, setNewSeasonName] = useState('Ganesh Utsav 2026–27');
+  const [newSeasonStart, setNewSeasonStart] = useState('2026-09');
+  const [newSeasonEnd, setNewSeasonEnd] = useState('2027-08');
+  const [newSeasonStatus, setNewSeasonStatus] = useState<'Active' | 'Draft'>('Active');
 
-  // Selected record
-  const selectedRecord = seasons.find(s => s.id === selectedSeasonId) || seasons[0];
-  const activeSeasonRecord = seasons.find(s => s.isLive) || seasons[0];
-  const prevSeasonRecord = seasons.find(s => s.id === '2025-2026') || seasons[1] || seasons[0];
+  // Selected record safely guarded
+  const selectedRecord = seasons.find(s => s.id === selectedSeasonId) || seasons[0] || null;
+  const activeSeasonRecord = seasons.find(s => s.isLive) || seasons[0] || null;
+  const prevSeasonRecord = seasons.length > 1 ? seasons[1] : null;
 
-  const [editName, setEditName] = useState(selectedRecord.name);
-  const [editStart, setEditStart] = useState(selectedRecord.startDate);
-  const [editEnd, setEditEnd] = useState(selectedRecord.endDate);
+  const [editName, setEditName] = useState(selectedRecord?.name || '');
+  const [editStart, setEditStart] = useState(selectedRecord?.startDate || '');
+  const [editEnd, setEditEnd] = useState(selectedRecord?.endDate || '');
 
   const handleCreateSeason = (e: React.FormEvent) => {
     e.preventDefault();
@@ -214,49 +210,70 @@ export const SeasonsManager: React.FC<SeasonsManagerProps> = ({
 
   return (
     <div className="space-y-3">
-      {/* 1. Horizontal Season Switcher (Compact text buttons) */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
-        {seasons.map((s) => {
-          const isSelected = selectedSeasonId === s.id;
-          return (
-            <button
-              key={s.id}
-              type="button"
-              onClick={() => {
-                setSelectedSeasonId(s.id);
-                setEditName(s.name);
-                setEditStart(s.startDate);
-                setEditEnd(s.endDate);
-              }}
-              className={`px-3 py-1 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-1.5 active:scale-95 ${
-                isSelected
-                  ? 'bg-slate-900 text-white'
-                  : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50'
-              }`}
-            >
-              <span>{s.label}</span>
-              {s.isLive && (
-                <span className="text-[10px] text-emerald-400 font-medium">• Active</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* 2. Single-line Subtle Info Strip */}
+      {/* 1. Subtle Info Strip */}
       <div className="px-3 py-1.5 rounded-xl bg-slate-100/80 text-[11px] text-slate-600 flex items-center gap-1.5 font-medium">
         <Info size={13} className="text-slate-500 shrink-0" />
-        <span>Previous pending carries forward automatically</span>
+        <span>{seasons.length === 0 ? 'No Active Season Configured' : 'Previous pending carries forward automatically'}</span>
       </div>
 
-      {/* 3. Active Season Card (Mobile Optimized) */}
-      <div className="glass-card rounded-2xl p-3.5 border border-slate-200/80 space-y-3">
-        {/* Title & Status */}
-        <div className="flex items-center justify-between">
+      {seasons.length === 0 || !activeSeasonRecord ? (
+        <div className="glass-card rounded-2xl p-6 sm:p-8 text-center border border-slate-200/80 space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mx-auto">
+            <Calendar size={24} />
+          </div>
           <div>
-            <h3 className="font-semibold text-sm sm:text-base text-slate-900">
-              {activeSeasonRecord.name}
-            </h3>
+            <h4 className="text-sm font-bold text-slate-800">No Seasons Created Yet</h4>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
+              All dummy seasons have been cleared. Tap &quot;+ New&quot; or deploy the Mandal Snapshot to initialize a season.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setCreateOpen(true)}
+            className="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 active:scale-95 transition cursor-pointer"
+          >
+            + Create New Season
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Horizontal Season Switcher (Compact text buttons) */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 no-scrollbar">
+            {seasons.map((s) => {
+              const isSelected = selectedSeasonId === s.id;
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => {
+                    setSelectedSeasonId(s.id);
+                    setEditName(s.name);
+                    setEditStart(s.startDate);
+                    setEditEnd(s.endDate);
+                  }}
+                  className={`px-3 py-1 rounded-xl text-xs font-semibold transition shrink-0 flex items-center gap-1.5 active:scale-95 ${
+                    isSelected
+                      ? 'bg-slate-900 text-white'
+                      : 'bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50'
+                  }`}
+                >
+                  <span>{s.label}</span>
+                  {s.isLive && (
+                    <span className="text-[10px] text-emerald-400 font-medium">• Active</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active Season Card (Mobile Optimized) */}
+          <div className="glass-card rounded-2xl p-3.5 border border-slate-200/80 space-y-3">
+            {/* Title & Status */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-sm sm:text-base text-slate-900">
+                  {activeSeasonRecord.name}
+                </h3>
             <p className="text-[11px] text-slate-500 font-normal mt-0.5">
               Active · {activeSeasonRecord.startDate} → {activeSeasonRecord.endDate}
             </p>
@@ -348,33 +365,35 @@ export const SeasonsManager: React.FC<SeasonsManagerProps> = ({
         </div>
       </div>
 
-      {/* 5. Previous Season Summary (4-Line Compact Block) */}
-      <div className="glass-card rounded-2xl p-3.5 border border-slate-200/80 space-y-2">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-slate-800">
-            {prevSeasonRecord.label} · Closed
-          </span>
-        </div>
+      {/* 5. Previous Season Summary (only if real previous season exists) */}
+      {prevSeasonRecord && (
+        <div className="glass-card rounded-2xl p-3.5 border border-slate-200/80 space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-slate-800">
+              {prevSeasonRecord.label} · Closed
+            </span>
+          </div>
 
-        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
-          <div className="flex justify-between text-slate-600">
-            <span>Income</span>
-            <span className="font-semibold text-emerald-600">₹{(prevSeasonRecord.totalIncome / 1000).toFixed(1)}k</span>
-          </div>
-          <div className="flex justify-between text-slate-600">
-            <span>Expense</span>
-            <span className="font-semibold text-rose-600">₹{(prevSeasonRecord.totalExpense / 1000).toFixed(1)}k</span>
-          </div>
-          <div className="flex justify-between text-slate-600">
-            <span>Balance</span>
-            <span className="font-semibold text-slate-900">₹{(prevSeasonRecord.closingBalance / 1000).toFixed(1)}k</span>
-          </div>
-          <div className="flex justify-between text-slate-600">
-            <span>Pending</span>
-            <span className="font-semibold text-amber-800">₹{(prevSeasonRecord.totalPending / 1000).toFixed(1)}k</span>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+            <div className="flex justify-between text-slate-600">
+              <span>Income</span>
+              <span className="font-semibold text-emerald-600">₹{(prevSeasonRecord.totalIncome / 1000).toFixed(1)}k</span>
+            </div>
+            <div className="flex justify-between text-slate-600">
+              <span>Expense</span>
+              <span className="font-semibold text-rose-600">₹{(prevSeasonRecord.totalExpense / 1000).toFixed(1)}k</span>
+            </div>
+            <div className="flex justify-between text-slate-600">
+              <span>Balance</span>
+              <span className="font-semibold text-slate-900">₹{(prevSeasonRecord.closingBalance / 1000).toFixed(1)}k</span>
+            </div>
+            <div className="flex justify-between text-slate-600">
+              <span>Pending</span>
+              <span className="font-semibold text-amber-800">₹{(prevSeasonRecord.totalPending / 1000).toFixed(1)}k</span>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 6. Season History (Simple Rows) */}
       <div className="glass-card rounded-2xl p-3.5 border border-slate-200/80 space-y-2">
@@ -426,15 +445,13 @@ export const SeasonsManager: React.FC<SeasonsManagerProps> = ({
 
         <div className="space-y-1 text-xs">
           <div className="flex items-center justify-between text-slate-600">
-            <span>Season created</span>
-            <span className="text-[10px] text-slate-400">10:00 AM</span>
-          </div>
-          <div className="flex items-center justify-between text-slate-600">
-            <span>Opening balance verified</span>
-            <span className="text-[10px] text-slate-400">10:15 AM</span>
+            <span>Season active</span>
+            <span className="text-[10px] text-slate-400">Live</span>
           </div>
         </div>
       </div>
+    </>
+  )}
 
       {/* BOTTOM SHEET 1: View Records Modal */}
       {isRecordsSheetOpen && (
@@ -521,7 +538,7 @@ export const SeasonsManager: React.FC<SeasonsManagerProps> = ({
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/50 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="w-full max-w-md rounded-t-3xl sm:rounded-3xl bg-white border border-slate-200 p-4 space-y-3">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <h4 className="font-semibold text-sm text-slate-900">Manage Season ({selectedRecord.label})</h4>
+              <h4 className="font-semibold text-sm text-slate-900">Manage Season ({selectedRecord?.label || ''})</h4>
               <button
                 type="button"
                 onClick={() => setIsManageSheetOpen(false)}
@@ -562,7 +579,7 @@ export const SeasonsManager: React.FC<SeasonsManagerProps> = ({
                 <ChevronRight size={14} className="text-slate-400" />
               </button>
 
-              {selectedRecord.status === 'Active' ? (
+              {selectedRecord?.status === 'Active' ? (
                 <button
                   type="button"
                   onClick={() => handleSetStatus('Closed')}
