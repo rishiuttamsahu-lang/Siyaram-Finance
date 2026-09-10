@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --ios-bg: #f5f8f6;
+    --ios-card: #ffffff;
+    --ios-card-glass: rgba(255, 255, 255, 0.82);
+    --ios-emerald: #10b981;
+    --ios-emerald-dark: #059669;
+    --ios-amber: #f59e0b;
+    --ios-crimson: #e11d48;
+    --ios-text: #0f172a;
+    --ios-muted: #64748b;
+    --ios-border: rgba(15, 23, 42, 0.06);
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+  }
+
+  body {
+    background-color: var(--ios-bg);
+    color: var(--ios-text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Plus Jakarta Sans", Inter, -apple-system, sans-serif;
+    letter-spacing: -0.015em;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+}
+
+/* Ambient iOS Mesh Background */
+.ios-mesh-bg {
+  background: 
+    radial-gradient(at 10% 10%, rgba(167, 243, 208, 0.45) 0px, transparent 50%),
+    radial-gradient(at 90% 15%, rgba(199, 210, 254, 0.35) 0px, transparent 45%),
+    radial-gradient(at 50% 90%, rgba(254, 240, 138, 0.25) 0px, transparent 50%),
+    #f5f8f6;
+}
+
+/* iOS Glass Card */
+.glass-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 10px 30px -8px rgba(15, 23, 42, 0.05), 0 4px 6px -2px rgba(15, 23, 42, 0.02);
+}
+
+.glass-card-subtle {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+/* Floating iOS Dock */
+.glass-dock {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.12), 0 1px 3px rgba(0,0,0,0.03);
+}
+
+/* Segmented Control Pill */
+.ios-segmented {
+  background: rgba(15, 23, 42, 0.05);
+  padding: 4px;
+  border-radius: 9999px;
+}
+
+/* Hide scrollbars for app-like presentation */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Numeric tabular styling */
+.tabular-numbers {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Soft Spring animation */
+.animate-spring {
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
