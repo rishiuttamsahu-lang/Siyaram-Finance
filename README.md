@@ -1,17 +1,43 @@
-# focus_lock
+# Siyaram Finance — Next.js & Cloudflare Workers Architecture
 
-A new Flutter project.
+A mobile-first, high-precision financial ledger and management system designed for **Siyaram Mandal (Ganesh Utsav)**.
 
-## Getting Started
+## System Architecture
 
-This project is a starting point for a Flutter application.
+```
+Telegram Mobile/Desktop Bot ──► Cloudflare Workers (V8 Edge) ──► Firebase Firestore (Realtime DB)
+                                                                             │
+Next.js 16 Web Dashboard ────────────────────────────────────────────────────┘
+```
 
-A few resources to get you started if this is your first Flutter project:
+- **Web Portal**: Next.js 16 (Turbopack, React 19, Vanilla CSS + Tailwind, Mobile-first iOS aesthetic).
+- **Telegram Bot**: Cloudflare Workers engine for ultra-fast, zero-friction field collection.
+- **Database**: Google Cloud Firestore (Document model, real-time listeners).
+- **Authentication**: Google OAuth with Admin role allowlist.
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Repository Structure
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- `app/` — Next.js application routes, layout, and global styles.
+- `components/` — Mobile-first glassmorphic components and tab views (Dashboard, Members, Dues, Buildings, Transactions, Sync, Users, Logs).
+- `lib/` — Shared financial mathematics (`finance.ts`), Firebase configuration (`firebase.ts`), Firestore service (`firestoreService.ts`), and TypeScript data models (`types.ts`).
+- `telegram-bot/` — Cloudflare Workers Telegram Bot edge engine.
+- `firestore.rules` — Production Firestore security rules.
+- `Product-explanation.md` — Master functional specification & mathematical invariants.
+- `Agent-rules.md` — Rules for AI coding agents regarding financial integrity.
+
+## Local Development
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Production build
+npm run build
+```
+
+## Telegram Bot Deployment (Cloudflare Workers)
+
+See [`telegram-bot/README.md`](./telegram-bot/README.md) for step-by-step instructions on setting up the Telegram Bot token and deploying to Cloudflare Workers via Wrangler.

@@ -73,7 +73,7 @@ export const BuildingsTab: React.FC<BuildingsTabProps> = ({
           </div>
           <h4 className="text-xs font-bold text-slate-700">No Wings Added Yet</h4>
           <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
-            All dummy data has been removed. Sign in as Admin to deploy the Mandal Snapshot or add wings.
+            Sign in as Admin to configure wings and buildings.
           </p>
         </div>
       ) : (

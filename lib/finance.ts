@@ -45,6 +45,9 @@ export function getEffectiveMonthTarget(
   if (member.monthlyOverrides && member.monthlyOverrides[month] !== undefined) {
     return member.monthlyOverrides[month];
   }
+  if (season.monthQuotas && season.monthQuotas[month] !== undefined) {
+    return season.monthQuotas[month];
+  }
   return season.defaultMonthlyQuota;
 }
 

@@ -1,0 +1,15 @@
+name = "siyaram-telegram-bot"
+main = "src/index.ts"
+compatibility_date = "2024-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+FIREBASE_PROJECT_ID = "studio-3440483519-68ed7"
+FIREBASE_API_KEY = "AIzaSyD6gb4z58EAANhRpCwqEqBETz3LsucgWmo"
+ENVIRONMENT = "production"
+
+# Secrets to be configured via `wrangler secret put <NAME>`:
+# 1. TELEGRAM_BOT_TOKEN       (Required: Token from @BotFather)
+# 2. TELEGRAM_SECRET_TOKEN   (Optional: Webhook secret verification header)
+# 3. FIREBASE_SERVICE_ACCOUNT (Optional: Service Account JSON string for full Firestore admin write)
+# 4. AUTHORIZED_TELEGRAM_IDS (Optional: Comma-separated Telegram User IDs allowed to make entries)

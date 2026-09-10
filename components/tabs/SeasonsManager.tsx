@@ -224,7 +224,7 @@ export const SeasonsManager: React.FC<SeasonsManagerProps> = ({
           <div>
             <h4 className="text-sm font-bold text-slate-800">No Seasons Created Yet</h4>
             <p className="text-xs text-slate-500 max-w-sm mx-auto mt-1">
-              All dummy seasons have been cleared. Tap &quot;+ New&quot; or deploy the Mandal Snapshot to initialize a season.
+              Tap &quot;+ New&quot; to initialize a new season.
             </p>
           </div>
           <button

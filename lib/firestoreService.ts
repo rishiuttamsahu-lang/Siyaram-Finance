@@ -257,6 +257,45 @@ export async function saveSeasonToFirestore(season: Season): Promise<void> {
 }
 
 /**
+ * Update a specific month's quota in the Season document using field-level update.
+ * More reliable than full setDoc for single-field updates.
+ */
+export async function updateSeasonMonthQuota(
+  seasonId: string,
+  month: string,
+  amount: number
+): Promise<void> {
+  if (!db || !seasonId) return;
+  try {
+    const seasonRef = doc(db, COLLECTIONS.SEASONS, seasonId);
+    await updateDoc(seasonRef, {
+      [`monthQuotas.${month}`]: amount,
+    });
+  } catch (err: any) {
+    console.error('Failed to update month quota in Firestore:', err);
+    throw err;
+  }
+}
+
+/**
+ * Update season default monthly quota using field-level update.
+ */
+export async function updateSeasonDefaultQuota(
+  seasonId: string,
+  newQuota: number
+): Promise<void> {
+  if (!db || !seasonId) return;
+  try {
+    const seasonRef = doc(db, COLLECTIONS.SEASONS, seasonId);
+    await updateDoc(seasonRef, { defaultMonthlyQuota: newQuota });
+  } catch (err: any) {
+    console.error('Failed to update default quota in Firestore:', err);
+    throw err;
+  }
+}
+
+
+/**
  * Save an audit log in Firestore.
  */
 export async function saveAuditLogToFirestore(log: AuditLog): Promise<void> {

@@ -250,7 +250,7 @@ export const AdminBuildings: React.FC<AdminBuildingsProps> = ({
           })}
 
           {buildingsList.length === 0 && (
-            <span className="text-xs text-slate-400 py-1">No wings configured yet. Tap &quot;+ Add Wing&quot; or deploy Snapshot.</span>
+            <span className="text-xs text-slate-400 py-1">No wings configured yet. Tap &quot;+ Add Wing&quot; to configure.</span>
           )}
         </div>
       </div>

@@ -216,7 +216,7 @@ export const MembersTab: React.FC<MembersTabProps> = ({
               </div>
               <h4 className="text-xs font-bold text-slate-700">No Members Added Yet</h4>
               <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
-                All dummy data has been removed. Sign in as Admin to deploy the Mandal Snapshot or add members.
+                Sign in as Admin to add members or configure season.
               </p>
             </div>
           ) : (

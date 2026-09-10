@@ -12,6 +12,7 @@ export const initialSeason: Season = {
   defaultMonthlyQuota: 200,
   months: [],
   blockedMonths: [],
+  monthQuotas: {},
 };
 
 // Default completely empty arrays (0 dummy data)
@@ -48,6 +49,7 @@ export const siyaramTemplateSeason = (openingBalance = 6500): Season => ({
     '2027-08',
   ],
   blockedMonths: [],
+  monthQuotas: {},
 });
 
 export const siyaramTemplateMembers: Member[] = [

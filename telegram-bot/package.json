@@ -1,0 +1,26 @@
+{
+  "name": "siyaram-telegram-bot",
+  "version": "1.0.0",
+  "description": "High-performance Telegram Bot for Siyaram Finance deployed on Cloudflare Workers",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test"
+  },
+  "keywords": [
+    "cloudflare-workers",
+    "telegram-bot",
+    "siyaram-finance",
+    "firestore"
+  ],
+  "author": "Siyaram Mandal",
+  "license": "MIT",
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240909.0",
+    "typescript": "^5.6.2",
+    "wrangler": "^3.78.6"
+  }
+}

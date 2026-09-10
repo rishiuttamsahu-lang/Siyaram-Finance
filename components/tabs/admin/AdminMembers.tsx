@@ -248,7 +248,7 @@ export const AdminMembers: React.FC<AdminMembersProps> = ({
               {members.length === 0 ? 'No members added yet' : `No members found matching "${searchQuery}"`}
             </p>
             <p className="text-[11px] text-slate-400">
-              {members.length === 0 ? 'Tap "+ Add" or deploy Mandal Snapshot to enroll members.' : 'Try adjusting your search or filter criteria.'}
+              {members.length === 0 ? 'Tap "+ Add" to enroll members.' : 'Try adjusting your search or filter criteria.'}
             </p>
           </div>
         )}

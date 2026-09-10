@@ -10,3 +10,5 @@ const firebaseConfig = {
 github:
 
 https://github.com/rishiuttamsahu-lang/Siyaram-Finance.git
+
+tele token:8285947392:AAHbBjckKSYXXeI68oxa39lu477A5qg8Dbw

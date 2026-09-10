@@ -23,9 +23,10 @@ interface AdminMonthlyDuesProps {
   season: Season;
   members: Member[];
   onToggleBlockMonth: (month: string) => void;
-  onAddMonth?: (month: string) => void;
+  onAddMonth?: (month: string, amount?: number) => void;
   onDeleteMonth?: (month: string) => void;
   onUpdateDefaultQuota?: (newQuota: number) => void;
+  onUpdateMonthQuota?: (month: string, amount: number) => void;
   onSetMemberMonthOverride?: (memberId: string, month: string, amount: number | null) => void;
 }
 
@@ -36,6 +37,7 @@ export const AdminMonthlyDues: React.FC<AdminMonthlyDuesProps> = ({
   onAddMonth,
   onDeleteMonth,
   onUpdateDefaultQuota,
+  onUpdateMonthQuota,
   onSetMemberMonthOverride,
 }) => {
   const [globalQuota, setGlobalQuota] = useState(String(season.defaultMonthlyQuota || 200));
@@ -50,6 +52,13 @@ export const AdminMonthlyDues: React.FC<AdminMonthlyDuesProps> = ({
   // Add Month Modal state
   const [isAddMonthModalOpen, setIsAddMonthModalOpen] = useState(false);
   const [newMonthInput, setNewMonthInput] = useState('');
+  const [newMonthAmount, setNewMonthAmount] = useState(String(season.defaultMonthlyQuota || 200));
+
+  // Edit Month Quota Modal state (for any month in schedule)
+  const [editingMonthQuota, setEditingMonthQuota] = useState<{
+    month: string;
+    amount: string;
+  } | null>(null);
 
   // Delete Month Confirmation state
   const [monthToDelete, setMonthToDelete] = useState<string | null>(null);
@@ -94,16 +103,29 @@ export const AdminMonthlyDues: React.FC<AdminMonthlyDuesProps> = ({
 
   const handleOpenAddMonth = () => {
     setNewMonthInput(getSuggestedNextMonth());
+    setNewMonthAmount(String(season.defaultMonthlyQuota || 200));
     setIsAddMonthModalOpen(true);
   };
 
   const handleConfirmAddMonth = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMonthInput) return;
+    const amt = parseInt(newMonthAmount, 10) || season.defaultMonthlyQuota || 200;
     if (onAddMonth) {
-      onAddMonth(newMonthInput);
+      onAddMonth(newMonthInput, amt);
     }
     setIsAddMonthModalOpen(false);
+  };
+
+  const handleSaveMonthQuota = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMonthQuota) return;
+    const amt = parseInt(editingMonthQuota.amount, 10);
+    if (isNaN(amt) || amt < 0) return;
+    if (onUpdateMonthQuota) {
+      onUpdateMonthQuota(editingMonthQuota.month, amt);
+    }
+    setEditingMonthQuota(null);
   };
 
   const handleConfirmDeleteMonth = () => {
@@ -214,6 +236,9 @@ export const AdminMonthlyDues: React.FC<AdminMonthlyDuesProps> = ({
             const isBlocked = season.blockedMonths.includes(m);
             const isLive = m === season.liveMonth;
             const { short, year } = formatMonthLabel(m);
+            const monthAmount = season.monthQuotas?.[m] !== undefined
+              ? season.monthQuotas[m]
+              : (season.defaultMonthlyQuota || 200);
 
             return (
               <div
@@ -236,11 +261,21 @@ export const AdminMonthlyDues: React.FC<AdminMonthlyDuesProps> = ({
                   )}
                 </div>
 
-                {/* Right: Target, Block toggle & Delete */}
+                {/* Right: Target (Click to Edit), Block toggle & Delete */}
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <span className="font-semibold text-slate-800 tabular-numbers text-xs">
-                    {isBlocked ? '₹0' : `₹${globalQuota}`}
-                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setEditingMonthQuota({ month: m, amount: String(monthAmount) })}
+                    className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border text-xs font-semibold tabular-numbers transition cursor-pointer active:scale-95 group ${
+                      isBlocked
+                        ? 'bg-slate-100 text-slate-400 border-slate-200 hover:bg-slate-200/70'
+                        : 'bg-emerald-50/80 text-emerald-800 border-emerald-200/80 hover:bg-emerald-100'
+                    }`}
+                    title={`Click to edit quota for ${short} ${year}`}
+                  >
+                    <span>{isBlocked ? '₹0' : `₹${monthAmount}`}</span>
+                    <Edit2 size={10} className="text-emerald-600 group-hover:text-emerald-800 transition" />
+                  </button>
 
                   {/* Block / Unblock Toggle */}
                   <button
@@ -357,7 +392,12 @@ export const AdminMonthlyDues: React.FC<AdminMonthlyDuesProps> = ({
                     <span className="text-[11px] font-semibold text-slate-700">
                       {member.isHonorary
                         ? '₹0'
-                        : `₹${member.monthlyOverrides?.[season.liveMonth] ?? globalQuota}`}
+                        : `₹${
+                            member.monthlyOverrides?.[season.liveMonth] ??
+                            (season.monthQuotas?.[season.liveMonth] !== undefined
+                              ? season.monthQuotas[season.liveMonth]
+                              : season.defaultMonthlyQuota)
+                          }`}
                     </span>
                     <div
                       className={`p-1 text-slate-400 transition-transform duration-200 ${
@@ -385,8 +425,14 @@ export const AdminMonthlyDues: React.FC<AdminMonthlyDuesProps> = ({
                         const isLive = m === season.liveMonth;
                         const { short, year } = formatMonthLabel(m);
 
+                        // Per-month quota from Months Schedule (falls back to default)
+                        const monthScheduleQuota =
+                          season.monthQuotas?.[m] !== undefined
+                            ? season.monthQuotas[m]
+                            : season.defaultMonthlyQuota;
+
                         // Effective due for this member in month m
-                        let effectiveDue = season.defaultMonthlyQuota;
+                        let effectiveDue = monthScheduleQuota;
                         let statusTag = 'Default';
                         let tagColor = 'text-slate-400 bg-slate-100';
 
@@ -399,6 +445,7 @@ export const AdminMonthlyDues: React.FC<AdminMonthlyDuesProps> = ({
                           statusTag = 'Blocked';
                           tagColor = 'text-amber-800 bg-amber-50';
                         } else if (customVal !== null) {
+                          // Member has an explicit personal override for this month
                           effectiveDue = customVal;
                           statusTag = customVal === 0 ? 'Exempt (₹0)' : 'Custom';
                           tagColor = customVal === 0 ? 'text-emerald-700 bg-emerald-50' : 'text-amber-800 bg-amber-50';
@@ -499,6 +546,25 @@ export const AdminMonthlyDues: React.FC<AdminMonthlyDuesProps> = ({
                 <span className="text-[10px] text-slate-400 block mt-1">
                   Suggested next: {getSuggestedNextMonth()}
                 </span>
+              </div>
+
+              <div>
+                <label className="block font-medium text-slate-700 mb-1">
+                  Monthly Quota Amount (₹)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-slate-400">₹</span>
+                  <input
+                    type="number"
+                    value={newMonthAmount}
+                    onChange={(e) => setNewMonthAmount(e.target.value)}
+                    className="w-full pl-7 pr-3 py-2 rounded-xl border border-slate-200 font-semibold text-slate-900 tabular-numbers focus:outline-none focus:ring-1 focus:ring-slate-900"
+                    placeholder="200"
+                    min="0"
+                    step="10"
+                    required
+                  />
+                </div>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
@@ -685,6 +751,119 @@ export const AdminMonthlyDues: React.FC<AdminMonthlyDuesProps> = ({
                 )}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 8. EDIT MONTH SCHEDULE QUOTA MODAL */}
+      {editingMonthQuota && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-xs rounded-3xl bg-white border border-slate-200 p-4 space-y-3 shadow-xl">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div>
+                <h4 className="font-semibold text-sm text-slate-900">
+                  Edit Month Quota
+                </h4>
+                <p className="text-[11px] text-slate-500 font-medium">
+                  {formatMonthLabel(editingMonthQuota.month).full} Target Dues
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingMonthQuota(null)}
+                className="p-1 rounded-full text-slate-400 hover:text-slate-600 cursor-pointer"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveMonthQuota} className="space-y-3 text-xs">
+              <div>
+                <label className="block font-medium text-slate-700 mb-1">
+                  Monthly Quota (₹)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    value={editingMonthQuota.amount}
+                    onChange={(e) =>
+                      setEditingMonthQuota(prev =>
+                        prev ? { ...prev, amount: e.target.value } : null
+                      )
+                    }
+                    min="0"
+                    step="10"
+                    className="w-full pl-7 pr-3 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+                    required
+                    autoFocus
+                  />
+                </div>
+                <p className="text-[10px] text-slate-400 mt-1">
+                  This quota applies to all active members for {formatMonthLabel(editingMonthQuota.month).short}.
+                </p>
+              </div>
+
+              {/* Quick Preset Buttons */}
+              <div>
+                <span className="text-[10px] font-medium text-slate-400 block mb-1.5">
+                  Quick Presets
+                </span>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[100, 150, 200, 250].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() =>
+                        setEditingMonthQuota(prev =>
+                          prev ? { ...prev, amount: String(preset) } : null
+                        )
+                      }
+                      className={`py-1 rounded-lg text-xs font-semibold border transition cursor-pointer ${
+                        editingMonthQuota.amount === String(preset)
+                          ? 'bg-slate-900 text-white border-slate-900'
+                          : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      ₹{preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditingMonthQuota(prev =>
+                      prev ? { ...prev, amount: String(season.defaultMonthlyQuota || 200) } : null
+                    )
+                  }
+                  className="text-[11px] text-slate-500 hover:text-slate-900 flex items-center gap-1 cursor-pointer"
+                >
+                  <RotateCcw size={11} />
+                  <span>Reset ({season.defaultMonthlyQuota})</span>
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditingMonthQuota(null)}
+                    className="px-3 py-1.5 rounded-xl text-slate-600 font-medium hover:bg-slate-100 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-1.5 rounded-xl bg-slate-900 text-white font-medium hover:bg-slate-800 active:scale-95 transition cursor-pointer"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -14,6 +14,7 @@ export interface Season {
   defaultMonthlyQuota: number; // e.g. 200
   months: string[]; // ["2026-09", "2026-10", "2026-11", ...]
   blockedMonths: string[]; // ["2026-12", "2027-01", "2027-02", "2027-03", "2027-04", "2027-05"]
+  monthQuotas?: Record<string, number>; // e.g. { "2026-09": 200, "2026-10": 250 }
 }
 
 export interface Member {
