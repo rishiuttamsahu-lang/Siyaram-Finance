@@ -42,3 +42,8 @@ next-env.d.ts
 .pub-cache/
 .pub/
 /build/
+
+# secrets & service accounts
+firebase-services.json
+*-service-account*.json
+service-account*.json

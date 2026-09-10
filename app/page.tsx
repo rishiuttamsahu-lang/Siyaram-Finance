@@ -51,7 +51,9 @@ import {
   saveTransactionToFirestore,
   updateTransactionInFirestore,
   saveMemberToFirestore,
+  deleteMemberFromFirestore,
   saveBuildingToFirestore,
+  deleteBuildingFromFirestore,
   saveSeasonToFirestore,
   saveAuditLogToFirestore,
 } from '../lib/firestoreService';
@@ -464,19 +466,83 @@ export default function Home() {
     );
   };
 
-  // Admin: Add member
-  const handleAddMember = (name: string, quota: number, isHon: boolean) => {
+  // Admin: Add member (automatically follows season dues schedule without quota override)
+  const handleAddMember = (name: string, isHon: boolean) => {
     const newM: Member = {
       id: `m-${Date.now()}`,
-      name: name.toUpperCase(),
+      name: name.trim().toUpperCase(),
       previousYearPending: 0,
       isHonorary: isHon,
       isPaused: false,
-      monthlyOverrides: { [season.liveMonth]: quota },
+      monthlyOverrides: {},
       payments: {},
     };
     setMembers(prev => [...prev, newM]);
     saveMemberToFirestore(newM).catch(e => console.warn('Firestore member notice:', e));
+  };
+
+  // Admin: Bulk Add members
+  const handleBulkAddMembers = (membersList: { name: string; isHonorary: boolean }[]) => {
+    const baseTime = Date.now();
+    const createdList: Member[] = membersList.map((item, idx) => ({
+      id: `m-${baseTime}-${idx}`,
+      name: item.name.trim().toUpperCase(),
+      previousYearPending: 0,
+      isHonorary: item.isHonorary,
+      isPaused: false,
+      monthlyOverrides: {},
+      payments: {},
+    }));
+
+    setMembers(prev => [...prev, ...createdList]);
+    createdList.forEach(m => {
+      saveMemberToFirestore(m).catch(e => console.warn('Firestore member notice:', e));
+    });
+  };
+
+  // Admin: Update member
+  const handleUpdateMember = (updated: Member) => {
+    setMembers(prev => prev.map(m => m.id === updated.id ? updated : m));
+    saveMemberToFirestore(updated).catch(e => console.warn('Firestore member notice:', e));
+  };
+
+  // Admin: Permanently Delete member
+  const handleDeleteMember = (memberId: string) => {
+    setMembers(prev => prev.filter(m => m.id !== memberId));
+    deleteMemberFromFirestore(memberId).catch(e => console.warn('Firestore delete member notice:', e));
+  };
+
+  // Admin: Update building (floors, flats, collection)
+  const handleUpdateBuilding = (updatedBuilding: Building) => {
+    setBuildings(prev => prev.map(b => b.id === updatedBuilding.id ? updatedBuilding : b));
+    saveBuildingToFirestore(updatedBuilding).catch(e => console.warn('Firestore building notice:', e));
+  };
+
+  // Admin: Add building wing
+  const handleAddBuilding = (name: string, code: string) => {
+    const cleanCode = code.trim().toUpperCase();
+    const newB: Building = {
+      id: `bld-${cleanCode}`,
+      name: name.trim(),
+      code: cleanCode,
+      floors: [
+        { floorName: '3F', flats: [] },
+        { floorName: '2F', flats: [] },
+        { floorName: '1F', flats: [] },
+        { floorName: 'GR', flats: [] },
+      ],
+    };
+    setBuildings(prev => [...prev, newB]);
+    saveBuildingToFirestore(newB).catch(e => console.warn('Firestore building notice:', e));
+  };
+
+  // Admin: Delete building wing
+  const handleDeleteBuilding = (buildingId: string) => {
+    const toDelete = buildings.find(b => b.id === buildingId);
+    setBuildings(prev => prev.filter(b => b.id !== buildingId));
+    if (toDelete) {
+      deleteBuildingFromFirestore(toDelete.code).catch(e => console.warn('Firestore delete building notice:', e));
+    }
   };
 
   // Admin: Season Rollover Engine
@@ -653,6 +719,12 @@ export default function Home() {
               isAdmin={isAdmin}
               onToggleAdmin={() => setIsAdmin(!isAdmin)}
               onAddMember={handleAddMember}
+              onBulkAddMembers={handleBulkAddMembers}
+              onUpdateMember={handleUpdateMember}
+              onDeleteMember={handleDeleteMember}
+              onAddBuilding={handleAddBuilding}
+              onUpdateBuilding={handleUpdateBuilding}
+              onDeleteBuilding={handleDeleteBuilding}
               onToggleBlockMonth={handleToggleBlockMonth}
               onRolloverSeason={handleRolloverSeason}
               onUndoTransaction={handleUndoTransaction}

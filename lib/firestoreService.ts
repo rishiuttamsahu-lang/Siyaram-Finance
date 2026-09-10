@@ -3,6 +3,7 @@ import {
   doc, 
   setDoc, 
   updateDoc, 
+  deleteDoc,
   onSnapshot, 
   query, 
   orderBy, 
@@ -229,6 +230,20 @@ export async function saveMemberToFirestore(member: Member): Promise<void> {
 }
 
 /**
+ * Permanently delete a member from Firestore.
+ */
+export async function deleteMemberFromFirestore(memberId: string): Promise<void> {
+  if (!db || !memberId) return;
+  try {
+    const memberRef = doc(db, COLLECTIONS.MEMBERS, memberId);
+    await deleteDoc(memberRef);
+  } catch (err: any) {
+    console.error('Failed to delete member from Firestore:', err);
+    throw err;
+  }
+}
+
+/**
  * Save or update a building wing in Firestore.
  */
 export async function saveBuildingToFirestore(building: Building): Promise<void> {
@@ -238,6 +253,20 @@ export async function saveBuildingToFirestore(building: Building): Promise<void>
     await setDoc(buildingRef, building, { merge: true });
   } catch (err: any) {
     console.error('Failed to save building to Firestore:', err);
+    throw err;
+  }
+}
+
+/**
+ * Permanently delete a building wing from Firestore.
+ */
+export async function deleteBuildingFromFirestore(buildingCode: string): Promise<void> {
+  if (!db || !buildingCode) return;
+  try {
+    const buildingRef = doc(db, COLLECTIONS.BUILDINGS, buildingCode);
+    await deleteDoc(buildingRef);
+  } catch (err: any) {
+    console.error('Failed to delete building from Firestore:', err);
     throw err;
   }
 }

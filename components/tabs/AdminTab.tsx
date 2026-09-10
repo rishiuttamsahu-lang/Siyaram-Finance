@@ -2,23 +2,20 @@
 
 import React, { useState } from 'react';
 import { Season, Member, Building, Transaction, AuditLog } from '../../lib/types';
-import { 
-  LayoutDashboard,
-  Calendar, 
-  Users, 
+import {
+  Users,
+  Building2,
+  Calendar,
   CalendarRange,
-  Building2, 
   Receipt,
   RefreshCw,
   ShieldCheck,
   History,
-  Plus,
-  Sparkles
+  LayoutDashboard,
+  Plus
 } from 'lucide-react';
-
-
-import { AdminDashboard } from './admin/AdminDashboard';
 import { SeasonsManager } from './SeasonsManager';
+import { AdminDashboard } from './admin/AdminDashboard';
 import { AdminMembers } from './admin/AdminMembers';
 import { AdminMonthlyDues } from './admin/AdminMonthlyDues';
 import { AdminBuildings } from './admin/AdminBuildings';
@@ -35,7 +32,17 @@ interface AdminTabProps {
   auditLogs: AuditLog[];
   isAdmin: boolean;
   onToggleAdmin: () => void;
-  onAddMember: (name: string, quota: number, isHonorary: boolean) => void;
+  onAddMember: (name: string, isHonorary: boolean) => void;
+  onBulkAddMembers?: (members: { name: string; isHonorary: boolean }[]) => void;
+  onUpdateMember?: (updated: Member) => void;
+  onDeleteMember?: (memberId: string) => void;
+  onAddBuilding?: (name: string, code: string) => void;
+  onUpdateBuilding?: (updatedBuilding: Building) => void;
+  onDeleteBuilding?: (buildingId: string) => void;
+  onAddFloor?: (buildingId: string, floorName: string) => void;
+  onAddFlat?: (buildingId: string, floorName: string, flatNo: string, residentName: string) => void;
+  onUpdateFlat?: (buildingId: string, flatNo: string, residentName: string, amount: number, isPaid: boolean) => void;
+  onDeleteFlat?: (buildingId: string, floorName: string, flatNo: string) => void;
   onToggleBlockMonth: (month: string) => void;
   onRolloverSeason: (newSeasonId: string, startDate: string, endDate: string) => void;
   onUndoTransaction?: (txn: Transaction) => void;
@@ -46,6 +53,7 @@ interface AdminTabProps {
   onUpdateDefaultQuota?: (newQuota: number) => void;
   onUpdateMonthQuota?: (month: string, amount: number) => void;
   onSetMemberMonthOverride?: (memberId: string, month: string, amount: number | null) => void;
+  onOpenSnapshotModal?: () => void;
 }
 
 export type AdminSubTab = 
@@ -68,6 +76,16 @@ export const AdminTab: React.FC<AdminTabProps> = ({
   isAdmin,
   onToggleAdmin,
   onAddMember,
+  onBulkAddMembers,
+  onUpdateMember,
+  onDeleteMember,
+  onAddBuilding,
+  onUpdateBuilding,
+  onDeleteBuilding,
+  onAddFloor,
+  onAddFlat,
+  onUpdateFlat,
+  onDeleteFlat,
   onToggleBlockMonth,
   onRolloverSeason,
   onUndoTransaction,
@@ -78,6 +96,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
   onUpdateDefaultQuota,
   onUpdateMonthQuota,
   onSetMemberMonthOverride,
+  onOpenSnapshotModal,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<AdminSubTab>('dashboard');
 
@@ -229,13 +248,13 @@ export const AdminTab: React.FC<AdminTabProps> = ({
                 key={tab.id}
                 type="button"
                 onClick={() => setActiveSubTab(tab.id)}
-                className={`flex items-center justify-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-lg text-[11px] sm:text-xs font-medium transition whitespace-nowrap active:scale-95 cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer active:scale-95 ${
                   isActive
-                    ? 'bg-slate-900 text-white shadow-2xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+                    ? 'bg-slate-900 text-white shadow-2xs font-semibold'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
                 }`}
               >
-                <Icon size={13} className={isActive ? 'text-white' : 'text-slate-400'} />
+                <Icon size={14} className={isActive ? 'text-white' : 'text-slate-500'} />
                 <span>{tab.label}</span>
               </button>
             );
@@ -243,7 +262,9 @@ export const AdminTab: React.FC<AdminTabProps> = ({
         </div>
       </div>
 
-      {/* 1. Dashboard Tab */}
+      {/* SUB-TAB CONTENTS */}
+
+      {/* 1. Admin Dashboard (Summary & Analytics) */}
       {activeSubTab === 'dashboard' && (
         <AdminDashboard
           season={season}
@@ -251,7 +272,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
           buildings={buildings}
           transactions={transactions}
           auditLogs={auditLogs}
-          onNavigateTab={(tabId) => setActiveSubTab(tabId as AdminSubTab)}
+          onNavigateTab={(tabId: string) => setActiveSubTab(tabId as AdminSubTab)}
         />
       )}
 
@@ -267,7 +288,7 @@ export const AdminTab: React.FC<AdminTabProps> = ({
           onRolloverSeason={onRolloverSeason}
           isCreateModalOpen={isNewSeasonModalOpen}
           setIsCreateModalOpen={setIsNewSeasonModalOpen}
-          onNavigateTab={(tabId) => setActiveSubTab(tabId as AdminSubTab)}
+          onNavigateTab={(tabId: string) => setActiveSubTab(tabId as AdminSubTab)}
         />
       )}
 
@@ -278,6 +299,9 @@ export const AdminTab: React.FC<AdminTabProps> = ({
           members={members}
           transactions={transactions}
           onAddMember={onAddMember}
+          onBulkAddMembers={onBulkAddMembers}
+          onUpdateMember={onUpdateMember}
+          onDeleteMember={onDeleteMember}
           isAddModalOpen={isAddMemberModalOpen}
           setIsAddModalOpen={setIsAddMemberModalOpen}
         />
@@ -301,6 +325,13 @@ export const AdminTab: React.FC<AdminTabProps> = ({
       {activeSubTab === 'buildings' && (
         <AdminBuildings
           buildings={buildings}
+          onAddBuilding={onAddBuilding}
+          onUpdateBuilding={onUpdateBuilding}
+          onDeleteBuilding={onDeleteBuilding}
+          onAddFloor={onAddFloor}
+          onAddFlat={onAddFlat}
+          onUpdateFlat={onUpdateFlat}
+          onDeleteFlat={onDeleteFlat}
           isAddWingModalOpen={isAddWingModalOpen}
           setIsAddWingModalOpen={setIsAddWingModalOpen}
         />
