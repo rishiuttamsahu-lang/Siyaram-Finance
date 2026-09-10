@@ -1,0 +1,55 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Check if user is signed in with Google
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if signed-in user is authorized Admin
+    function isAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.email.lower() in [
+          'rishiuttamsahu@gmail.com'
+        ]);
+    }
+
+    // 1. Seasons (Curent & Past Ganesh Utsav Seasons)
+    match /seasons/{seasonId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 2. Members (Mandal Members Directory & Monthly Dues)
+    match /members/{memberId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 3. Buildings (Wings, Floors & Flat Collections)
+    match /buildings/{buildingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 4. Transactions Ledger (Chanda, Members, Flats, Kharcha)
+    match /transactions/{txnId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 5. System Audit Logs
+    match /audit_logs/{logId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Default fallback for any other subcollections
+    match /{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
