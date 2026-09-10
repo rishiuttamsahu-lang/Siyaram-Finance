@@ -1,0 +1,12 @@
+const firebaseConfig = {
+  apiKey: "AIzaSyD6gb4z58EAANhRpCwqEqBETz3LsucgWmo",
+  authDomain: "studio-3440483519-68ed7.firebaseapp.com",
+  projectId: "studio-3440483519-68ed7",
+  storageBucket: "studio-3440483519-68ed7.firebasestorage.app",
+  messagingSenderId: "250555537883",
+  appId: "1:250555537883:web:6f9214d094c1c25599effe"
+};
+
+github:
+
+https://github.com/rishiuttamsahu-lang/Siyaram-Finance.git
