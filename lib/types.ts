@@ -67,7 +67,7 @@ export interface Transaction {
   mode: PaymentMode;
   status: TransactionStatus;
   description: string;
-  source?: 'TEL' | 'WEB';
+  source?: 'TEL' | 'WEB' | 'WEBSITE' | 'TELEGRAM';
   metadata?: TransactionMetadata;
 }
 
@@ -81,7 +81,7 @@ export interface AuditLog {
   timestamp: string;
   notes?: string;
   type?: 'INCOME' | 'EXPENSE' | 'EDIT' | 'UNDO' | 'ROLLOVER';
-  source?: 'TEL' | 'WEB';
+  source?: 'TEL' | 'WEB' | 'WEBSITE' | 'TELEGRAM';
   syncStatus?: 'SYNCED' | 'FAILED' | 'PENDING';
   amount?: number;
   name?: string;

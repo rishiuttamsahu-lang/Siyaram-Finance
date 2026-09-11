@@ -116,7 +116,12 @@ export const AdminTransactions: React.FC<AdminTransactionsProps> = ({
     if (modeFilter !== 'ALL' && t.mode !== modeFilter) return false;
 
     // Origin source filter (TEL vs WEB)
-    if (sourceFilter !== 'ALL' && (t.source || 'TEL') !== sourceFilter) return false;
+    if (sourceFilter !== 'ALL') {
+      const isTel = t.source === 'TELEGRAM' || t.source === 'TEL' || !t.source;
+      const isWeb = t.source === 'WEBSITE' || t.source === 'WEB';
+      if (sourceFilter === 'TEL' && !isTel) return false;
+      if (sourceFilter === 'WEB' && !isWeb) return false;
+    }
 
     return true;
   });
@@ -303,21 +308,22 @@ export const AdminTransactions: React.FC<AdminTransactionsProps> = ({
                   {isReversed ? (
                     <span className="text-purple-600 font-medium">Reversed / Undone</span>
                   ) : (
-                    <div className="flex items-center gap-1.5 text-[11px] text-slate-500 font-normal">
+                    <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500 font-normal">
                       <span
                         className={`inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-semibold tracking-wide ${
-                          (t.source || 'TEL') === 'TEL'
+                          (t.source === 'TELEGRAM' || t.source === 'TEL' || !t.source)
                             ? 'bg-sky-50 text-sky-700 border border-sky-200/70'
-                            : 'bg-slate-100 text-slate-700 border border-slate-200/70'
+                            : 'bg-indigo-50 text-indigo-700 border border-indigo-200/70'
                         }`}
                       >
-                        {t.source || 'TEL'}
+                        {t.source === 'WEBSITE' || t.source === 'WEB' ? 'Website' : 'Telegram'}
                       </span>
                       <span>{getCategoryLabel(t.type)}</span>
                       <span>·</span>
                       <span>{getModeLabel(t.mode)}</span>
                       <span>·</span>
                       <span>{formatShortDateTime(t.timestamp)}</span>
+                      <span className="text-[10px] text-emerald-600 font-medium ml-1">✓</span>
                     </div>
                   )}
                 </div>
