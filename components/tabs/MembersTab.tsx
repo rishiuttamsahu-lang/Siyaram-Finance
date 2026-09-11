@@ -5,12 +5,14 @@ import { Member, Season, PaymentMode } from '../../lib/types';
 import { formatINR, computeMemberDue, getEffectiveMonthTarget } from '../../lib/finance';
 import { MicroChart } from '../MicroChart';
 import { Search, ChevronDown, ChevronUp, PlusCircle, ArrowUpDown, Table, LayoutList, CheckCircle2, AlertCircle, Ban, Users } from 'lucide-react';
+import { MembersSkeleton } from '../skeletons/MembersSkeleton';
 
 interface MembersTabProps {
   season: Season;
   members: Member[];
   onOpenPaymentModal: (member: Member) => void;
   isAdmin: boolean;
+  isLoading?: boolean;
 }
 
 const formatMonthName = (m: string) => {
@@ -29,12 +31,18 @@ export const MembersTab: React.FC<MembersTabProps> = ({
   members,
   onOpenPaymentModal,
   isAdmin,
+  isLoading = false,
 }) => {
   const [trackMonth, setTrackMonth] = useState<string>(season.liveMonth);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'due-desc' | 'name' | 'default'>('due-desc');
   const [viewMode, setViewMode] = useState<'cards' | 'grid'>('cards');
   const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null);
+
+  // If initial Firestore data is loading, return rich skeleton layout
+  if (isLoading) {
+    return <MembersSkeleton />;
+  }
 
   // Compute dues for all members up to the tracked month
   const memberDues = useMemo(() => {

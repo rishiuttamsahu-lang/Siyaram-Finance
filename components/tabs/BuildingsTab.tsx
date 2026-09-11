@@ -4,19 +4,27 @@ import React, { useState, useMemo } from 'react';
 import { Building, Flat } from '../../lib/types';
 import { formatINR } from '../../lib/finance';
 import { CheckCircle2, Layers, Building2 } from 'lucide-react';
+import { BuildingsSkeleton } from '../skeletons/BuildingsSkeleton';
 
 interface BuildingsTabProps {
   buildings: Building[];
   onOpenFlatModal: (building: Building, flat: Flat) => void;
   isAdmin: boolean;
+  isLoading?: boolean;
 }
 
 export const BuildingsTab: React.FC<BuildingsTabProps> = ({
   buildings,
   onOpenFlatModal,
   isAdmin,
+  isLoading = false,
 }) => {
   const [selectedBuildingId, setSelectedBuildingId] = useState<string>(buildings[0]?.id || '');
+
+  // If initial Firestore data is loading, return rich skeleton layout
+  if (isLoading) {
+    return <BuildingsSkeleton />;
+  }
 
   // Calculate overall aggregates
   const aggregates = useMemo(() => {

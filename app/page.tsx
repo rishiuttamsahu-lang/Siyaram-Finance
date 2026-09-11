@@ -30,16 +30,50 @@ import {
   onAuthStateChanged 
 } from '../lib/firebase';
 import { User } from 'firebase/auth';
+import dynamic from 'next/dynamic';
 import { IOSHeader } from '../components/iOSHeader';
 import { BottomNav, TabType } from '../components/BottomNav';
-import { MembersTab } from '../components/tabs/MembersTab';
-import { BuildingsTab } from '../components/tabs/BuildingsTab';
-import { IncomeTab } from '../components/tabs/IncomeTab';
-import { ExpenseTab } from '../components/tabs/ExpenseTab';
-import { AdminTab } from '../components/tabs/AdminTab';
-import { NumericKeypadModal } from '../components/NumericKeypadModal';
-import { AuthModal } from '../components/AuthModal';
-import { SnapshotDeployModal } from '../components/SnapshotDeployModal';
+import { MembersSkeleton } from '../components/skeletons/MembersSkeleton';
+import { BuildingsSkeleton } from '../components/skeletons/BuildingsSkeleton';
+import { TransactionsSkeleton } from '../components/skeletons/TransactionsSkeleton';
+
+// Next.js Dynamic Component Lazy Loading with Skeleton Fallbacks
+const MembersTab = dynamic(() => import('../components/tabs/MembersTab').then(mod => mod.MembersTab), {
+  ssr: false,
+  loading: () => <MembersSkeleton />,
+});
+
+const BuildingsTab = dynamic(() => import('../components/tabs/BuildingsTab').then(mod => mod.BuildingsTab), {
+  ssr: false,
+  loading: () => <BuildingsSkeleton />,
+});
+
+const IncomeTab = dynamic(() => import('../components/tabs/IncomeTab').then(mod => mod.IncomeTab), {
+  ssr: false,
+  loading: () => <TransactionsSkeleton type="income" />,
+});
+
+const ExpenseTab = dynamic(() => import('../components/tabs/ExpenseTab').then(mod => mod.ExpenseTab), {
+  ssr: false,
+  loading: () => <TransactionsSkeleton type="expense" />,
+});
+
+const AdminTab = dynamic(() => import('../components/tabs/AdminTab').then(mod => mod.AdminTab), {
+  ssr: false,
+  loading: () => <MembersSkeleton />,
+});
+
+const NumericKeypadModal = dynamic(() => import('../components/NumericKeypadModal').then(mod => mod.NumericKeypadModal), {
+  ssr: false,
+});
+
+const AuthModal = dynamic(() => import('../components/AuthModal').then(mod => mod.AuthModal), {
+  ssr: false,
+});
+
+const SnapshotDeployModal = dynamic(() => import('../components/SnapshotDeployModal').then(mod => mod.SnapshotDeployModal), {
+  ssr: false,
+});
 
 import {
   subscribeToActiveSeason,
@@ -65,19 +99,41 @@ export default function Home() {
   const [buildings, setBuildings] = useState<Building[]>(initialBuildings);
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>(initialAuditLogs);
-  
-  // Khajanchi personal bank balance for fund separation (PRD §5.7)
-  const [bankBalance, setBankBalance] = useState<number>(60000);
+
+  // Loading state machine to prevent "0" flash before Firestore hydration
+  const [loadedStatus, setLoadedStatus] = useState({
+    season: false,
+    members: false,
+    buildings: false,
+    transactions: false,
+  });
+
+  const isInitialLoading = !loadedStatus.season || !loadedStatus.members || !loadedStatus.transactions;
+
+  // Fallback safety timeout so UI never remains stuck in skeleton
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoadedStatus({ season: true, members: true, buildings: true, transactions: true });
+    }, 2800);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Active Navigation Tab
   const [activeTab, setActiveTab] = useState<TabType>('members');
+
+  // Khajanchi personal bank balance for fund separation (PRD §5.7)
+  const [bankBalance, setBankBalance] = useState<number>(60000);
+
+  // Smooth scroll to top on tab switch
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [activeTab]);
 
   // Google Auth User & Admin Gating
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isSnapshotModalOpen, setIsSnapshotModalOpen] = useState<boolean>(false);
-
 
   // Listen for Google Auth state changes
   useEffect(() => {
@@ -93,7 +149,7 @@ export default function Home() {
     return () => unsubAuth();
   }, [activeTab]);
 
-  // Real-time Firestore synchronization
+  // Real-time Firestore synchronization with hydration tracking
   useEffect(() => {
     const unsubSeason = subscribeToActiveSeason((cloudSeason) => {
       if (cloudSeason) {
@@ -101,15 +157,19 @@ export default function Home() {
       } else {
         setSeason(initialSeason);
       }
+      setLoadedStatus(prev => ({ ...prev, season: true }));
     });
     const unsubMembers = subscribeToMembers((cloudMembers) => {
       setMembers(cloudMembers || []);
+      setLoadedStatus(prev => ({ ...prev, members: true }));
     });
     const unsubBuildings = subscribeToBuildings((cloudBuildings) => {
       setBuildings(cloudBuildings || []);
+      setLoadedStatus(prev => ({ ...prev, buildings: true }));
     });
     const unsubTxns = subscribeToTransactions((cloudTxns) => {
       setTransactions(cloudTxns || []);
+      setLoadedStatus(prev => ({ ...prev, transactions: true }));
     });
     const unsubLogs = subscribeToAuditLogs((cloudLogs) => {
       setAuditLogs(cloudLogs || []);
@@ -669,6 +729,7 @@ export default function Home() {
           summary={summary}
           isAdmin={isAdmin}
           user={user}
+          isLoading={isInitialLoading}
           onOpenAuth={() => setIsAuthModalOpen(true)}
         />
 
@@ -680,6 +741,7 @@ export default function Home() {
               members={members}
               onOpenPaymentModal={openMemberPaymentModal}
               isAdmin={isAdmin}
+              isLoading={isInitialLoading}
             />
           )}
 
@@ -688,6 +750,7 @@ export default function Home() {
               buildings={buildings}
               onOpenFlatModal={openFlatModal}
               isAdmin={isAdmin}
+              isLoading={isInitialLoading}
             />
           )}
 
@@ -697,6 +760,7 @@ export default function Home() {
               onOpenAddModal={openAddIncomeModal}
               onUndoTransaction={handleUndoTransaction}
               isAdmin={isAdmin}
+              isLoading={isInitialLoading}
             />
           )}
 
@@ -706,6 +770,7 @@ export default function Home() {
               onOpenAddModal={openAddExpenseModal}
               onUndoTransaction={handleUndoTransaction}
               isAdmin={isAdmin}
+              isLoading={isInitialLoading}
             />
           )}
 

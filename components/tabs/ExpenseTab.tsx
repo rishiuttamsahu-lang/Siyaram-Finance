@@ -4,12 +4,14 @@ import React, { useState, useMemo } from 'react';
 import { Transaction, PaymentMode } from '../../lib/types';
 import { formatINR } from '../../lib/finance';
 import { ArrowUpRight, Plus, Smartphone, Banknote, RotateCcw, Split, Tag } from 'lucide-react';
+import { TransactionsSkeleton } from '../skeletons/TransactionsSkeleton';
 
 interface ExpenseTabProps {
   transactions: Transaction[];
   onOpenAddModal: () => void;
   onUndoTransaction: (txn: Transaction) => void;
   isAdmin: boolean;
+  isLoading?: boolean;
 }
 
 export const ExpenseTab: React.FC<ExpenseTabProps> = ({
@@ -17,9 +19,15 @@ export const ExpenseTab: React.FC<ExpenseTabProps> = ({
   onOpenAddModal,
   onUndoTransaction,
   isAdmin,
+  isLoading = false,
 }) => {
   const [splitView, setSplitView] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // If initial Firestore data is loading, return rich skeleton layout
+  if (isLoading) {
+    return <TransactionsSkeleton type="expense" />;
+  }
 
   // Filter active expenses only
   const expenseTxns = useMemo(() => {

@@ -11,6 +11,7 @@ interface IOSHeaderProps {
   summary: FinanceSummary;
   isAdmin: boolean;
   user: User | null;
+  isLoading?: boolean;
   onOpenAuth: () => void;
 }
 
@@ -19,6 +20,7 @@ export const IOSHeader: React.FC<IOSHeaderProps> = ({
   summary,
   isAdmin,
   user,
+  isLoading = false,
   onOpenAuth,
 }) => {
   const [showBalanceDrawer, setShowBalanceDrawer] = useState(false);
@@ -48,30 +50,38 @@ export const IOSHeader: React.FC<IOSHeaderProps> = ({
               </span>
             ) : null}
           </button>
-          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/50">
-            {season.id || 'Setup Pending'}
-          </span>
+          {isLoading ? (
+            <div className="w-16 h-5 rounded-full skeleton-emerald-shimmer" />
+          ) : (
+            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/50">
+              {season.id || '2025-26'}
+            </span>
+          )}
 
         </div>
 
         {/* Right side control: Total Net Balance Badge */}
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowBalanceDrawer(!showBalanceDrawer)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition active:scale-95 cursor-pointer ${
-              showBalanceDrawer
-                ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                : 'bg-white/90 text-slate-800 border-slate-200/80 hover:bg-white shadow-2xs'
-            }`}
-            title="Total Mandal Balance (Pichla Surplus + Inflows - Expenses)"
-          >
-            <Wallet size={13} className="text-emerald-500" />
-            <span className="text-[11px] font-medium text-slate-500 hidden sm:inline">Total:</span>
-            <span className="font-semibold tabular-numbers text-emerald-700">
-              {formatINR(summary.netBalance)}
-            </span>
-            {showBalanceDrawer ? <ChevronUp size={12} className="text-slate-400" /> : <ChevronDown size={12} className="text-slate-400" />}
-          </button>
+          {isLoading ? (
+            <div className="w-24 sm:w-28 h-8 rounded-full skeleton-shimmer" />
+          ) : (
+            <button
+              onClick={() => setShowBalanceDrawer(!showBalanceDrawer)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition active:scale-95 cursor-pointer ${
+                showBalanceDrawer
+                  ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
+                  : 'bg-white/90 text-slate-800 border-slate-200/80 hover:bg-white shadow-2xs'
+              }`}
+              title="Total Mandal Balance (Pichla Surplus + Inflows - Expenses)"
+            >
+              <Wallet size={13} className="text-emerald-500" />
+              <span className="text-[11px] font-medium text-slate-500 hidden sm:inline">Total:</span>
+              <span className="font-semibold tabular-numbers text-emerald-700">
+                {formatINR(summary.netBalance)}
+              </span>
+              {showBalanceDrawer ? <ChevronUp size={12} className="text-slate-400" /> : <ChevronDown size={12} className="text-slate-400" />}
+            </button>
+          )}
         </div>
       </div>
 

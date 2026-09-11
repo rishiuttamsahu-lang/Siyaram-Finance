@@ -4,12 +4,14 @@ import React, { useState, useMemo } from 'react';
 import { Transaction, PaymentMode } from '../../lib/types';
 import { formatINR } from '../../lib/finance';
 import { ArrowDownLeft, Plus, Smartphone, Banknote, RotateCcw, Split, Check } from 'lucide-react';
+import { TransactionsSkeleton } from '../skeletons/TransactionsSkeleton';
 
 interface IncomeTabProps {
   transactions: Transaction[];
   onOpenAddModal: () => void;
   onUndoTransaction: (txn: Transaction) => void;
   isAdmin: boolean;
+  isLoading?: boolean;
 }
 
 export const IncomeTab: React.FC<IncomeTabProps> = ({
@@ -17,9 +19,15 @@ export const IncomeTab: React.FC<IncomeTabProps> = ({
   onOpenAddModal,
   onUndoTransaction,
   isAdmin,
+  isLoading = false,
 }) => {
   const [splitView, setSplitView] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // If initial Firestore data is loading, return rich skeleton layout
+  if (isLoading) {
+    return <TransactionsSkeleton type="income" />;
+  }
 
   // Filter only active income/chanda transactions
   const incomeTxns = useMemo(() => {
