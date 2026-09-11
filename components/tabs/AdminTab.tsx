@@ -54,6 +54,11 @@ interface AdminTabProps {
   onUpdateMonthQuota?: (month: string, amount: number) => void;
   onSetMemberMonthOverride?: (memberId: string, month: string, amount: number | null) => void;
   onOpenSnapshotModal?: () => void;
+  allSeasons?: Season[];
+  onCreateDraftSeason?: (draftSeason: Season) => void;
+  onSetLiveSeason?: (draftSeasonId: string) => void;
+  onTogglePauseMember?: (member: Member) => void;
+  onDeleteSeason?: (seasonId: string) => void;
 }
 
 export type AdminSubTab = 
@@ -97,6 +102,11 @@ export const AdminTab: React.FC<AdminTabProps> = ({
   onUpdateMonthQuota,
   onSetMemberMonthOverride,
   onOpenSnapshotModal,
+  allSeasons,
+  onCreateDraftSeason,
+  onSetLiveSeason,
+  onTogglePauseMember,
+  onDeleteSeason,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<AdminSubTab>('dashboard');
 
@@ -280,12 +290,17 @@ export const AdminTab: React.FC<AdminTabProps> = ({
       {activeSubTab === 'seasons' && (
         <SeasonsManager
           season={season}
+          allSeasons={allSeasons}
           members={members}
           buildings={buildings}
           transactions={transactions}
           auditLogs={auditLogs}
           isAdmin={isAdmin}
           onRolloverSeason={onRolloverSeason}
+          onCreateDraftSeason={onCreateDraftSeason}
+          onSetLiveSeason={onSetLiveSeason}
+          onTogglePauseMember={onTogglePauseMember}
+          onDeleteSeason={onDeleteSeason}
           isCreateModalOpen={isNewSeasonModalOpen}
           setIsCreateModalOpen={setIsNewSeasonModalOpen}
           onNavigateTab={(tabId: string) => setActiveSubTab(tabId as AdminSubTab)}

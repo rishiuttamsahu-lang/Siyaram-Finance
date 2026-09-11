@@ -20,7 +20,8 @@ import {
 import { 
   calculateMandalTotals, 
   allocatePayment, 
-  createReversalAuditLog 
+  createReversalAuditLog,
+  computeMemberDue
 } from '../lib/finance';
 import { 
   auth, 
@@ -65,6 +66,7 @@ const AdminTab = dynamic(() => import('../components/tabs/AdminTab').then(mod =>
 
 const NumericKeypadModal = dynamic(() => import('../components/NumericKeypadModal').then(mod => mod.NumericKeypadModal), {
   ssr: false,
+  loading: () => null,
 });
 
 const AuthModal = dynamic(() => import('../components/AuthModal').then(mod => mod.AuthModal), {
@@ -77,6 +79,7 @@ const SnapshotDeployModal = dynamic(() => import('../components/SnapshotDeployMo
 
 import {
   subscribeToActiveSeason,
+  subscribeToAllSeasons,
   subscribeToSeason,
   subscribeToMembers,
   subscribeToBuildings,
@@ -89,12 +92,14 @@ import {
   saveBuildingToFirestore,
   deleteBuildingFromFirestore,
   saveSeasonToFirestore,
+  deleteSeasonFromFirestore,
   saveAuditLogToFirestore,
 } from '../lib/firestoreService';
 
 export default function Home() {
   // Application Data States (Hydrated with authentic data)
   const [season, setSeason] = useState<Season>(initialSeason);
+  const [allSeasons, setAllSeasons] = useState<Season[]>([]);
   const [members, setMembers] = useState<Member[]>(initialMembers);
   const [buildings, setBuildings] = useState<Building[]>(initialBuildings);
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
@@ -159,6 +164,9 @@ export default function Home() {
       }
       setLoadedStatus(prev => ({ ...prev, season: true }));
     });
+    const unsubAllSeasons = subscribeToAllSeasons((cloudSeasons) => {
+      setAllSeasons(cloudSeasons || []);
+    });
     const unsubMembers = subscribeToMembers((cloudMembers) => {
       setMembers(cloudMembers || []);
       setLoadedStatus(prev => ({ ...prev, members: true }));
@@ -177,6 +185,7 @@ export default function Home() {
 
     return () => {
       unsubSeason?.();
+      unsubAllSeasons?.();
       unsubMembers?.();
       unsubBuildings?.();
       unsubTxns?.();
@@ -272,6 +281,45 @@ export default function Home() {
     const nextSeq = Math.max(...transactions.map(t => t.sequenceNumber), 0) + 1;
 
     if (keypadConfig.actionType === 'MEMBER' && keypadConfig.targetMember) {
+      if (keypadConfig.targetMember.isPaused) {
+        // Paused Member Rule: dues are frozen; payment routes directly to General Chanda
+        const memberName = keypadConfig.targetMember.name;
+        const newTxn: Transaction = {
+          id: `txn-${Date.now()}`,
+          sequenceNumber: nextSeq,
+          timestamp: now,
+          type: 'CHANDA',
+          amount,
+          mode,
+          status: 'ACTIVE',
+          description: `Chanda: ${memberName} (Paused Member)`,
+          source: isAdmin ? 'WEB' : 'TEL',
+          metadata: {
+            donorName: `${memberName} (Paused Member)`,
+            note: note || 'Paused member contribution routed to General Chanda',
+            memberId: keypadConfig.targetMember.id,
+          },
+        };
+        setTransactions(prev => [newTxn, ...prev]);
+
+        const newAudit: AuditLog = {
+          id: `log-${Date.now()}`,
+          txnId: newTxn.id,
+          action: 'CREATE',
+          previousValue: null,
+          newValue: { amount, mode, member: memberName, routedTo: 'CHANDA' },
+          performedBy: isAdmin ? 'Admin:Web' : 'TelegramBot',
+          timestamp: now,
+          notes: `Paused Member: Routed directly to Chanda`,
+        };
+        setAuditLogs(prev => [newAudit, ...prev]);
+
+        saveTransactionToFirestore(newTxn).catch(e => console.warn('Firestore txn notice:', e));
+        saveAuditLogToFirestore(newAudit).catch(e => console.warn('Firestore audit notice:', e));
+        setKeypadConfig(prev => ({ ...prev, isOpen: false }));
+        return;
+      }
+
       // 1. Run the strict Payment Allocation Waterfall (PRD §5.4)
       const { updatedMember, allocationLog } = allocatePayment(
         keypadConfig.targetMember,
@@ -665,6 +713,121 @@ export default function Home() {
     }
   };
 
+  // Admin: Create Draft Season
+  const handleCreateDraftSeason = (draftSeason: Season) => {
+    setAllSeasons(prev => {
+      const filtered = prev.filter(s => s.id !== draftSeason.id);
+      return [...filtered, draftSeason];
+    });
+    saveSeasonToFirestore(draftSeason).catch(e => console.warn('Firestore draft season notice:', e));
+  };
+
+  // Admin: Toggle Pause Member
+  const handleTogglePauseMember = (member: Member) => {
+    const updatedMember: Member = {
+      ...member,
+      isPaused: !member.isPaused,
+      pausedAtMonth: !member.isPaused ? season.liveMonth : undefined,
+    };
+    setMembers(prev => prev.map(m => m.id === member.id ? updatedMember : m));
+    saveMemberToFirestore(updatedMember).catch(e => console.warn('Firestore pause member notice:', e));
+  };
+
+  // Admin: Delete Season
+  const handleDeleteSeason = (seasonId: string) => {
+    setAllSeasons(prev => prev.filter(s => s.id !== seasonId));
+    deleteSeasonFromFirestore(seasonId).catch(e => console.warn('Firestore delete season notice:', e));
+  };
+
+  // Admin: Set Live Season Transition
+  const handleSetLiveSeason = (draftSeasonId: string) => {
+    const closingSurplus = summary.netBalance;
+
+    // 1. Calculate and rollover pending dues to previousYearPending for all members
+    const updatedMembers = members.map(m => {
+      const due = computeMemberDue(m, season);
+      return {
+        ...m,
+        previousYearPending: m.isHonorary ? 0 : due.totalPending,
+        payments: {}, // Clear payments for fresh new season
+      };
+    });
+    setMembers(updatedMembers);
+    updatedMembers.forEach(m => {
+      saveMemberToFirestore(m).catch(e => console.warn('Firestore rollover member notice:', e));
+    });
+
+    // 2. Reset building flats collections
+    const resetBuildings = buildings.map(b => ({
+      ...b,
+      floors: b.floors.map(fl => ({
+        ...fl,
+        flats: fl.flats.map(flat => ({
+          ...flat,
+          isPaid: false,
+          amountPaid: 0,
+          paymentMode: undefined,
+          residentName: flat.residentName || '',
+        }))
+      }))
+    }));
+    setBuildings(resetBuildings);
+    resetBuildings.forEach(b => {
+      saveBuildingToFirestore(b).catch(e => console.warn('Firestore reset building notice:', e));
+    });
+
+    // 3. Archive old season
+    const archivedOldSeason: Season = {
+      ...season,
+      isActive: false,
+      status: 'ARCHIVED',
+    };
+    saveSeasonToFirestore(archivedOldSeason).catch(e => console.warn('Firestore archive season notice:', e));
+
+    // 4. Activate new season
+    const targetDraft = allSeasons.find(s => s.id === draftSeasonId);
+    const liveSeasonData: Season = {
+      ...(targetDraft || {
+        id: draftSeasonId,
+        name: `Ganesh Utsav ${draftSeasonId}`,
+        startDate: season.startDate,
+        endDate: season.endDate,
+        defaultMonthlyQuota: 200,
+        months: season.months,
+        blockedMonths: season.blockedMonths,
+      }),
+      id: draftSeasonId,
+      isActive: true,
+      status: 'ACTIVE',
+      openingBalance: closingSurplus,
+      liveMonth: targetDraft?.startDate || season.liveMonth,
+    };
+    setSeason(liveSeasonData);
+    saveSeasonToFirestore(liveSeasonData).catch(e => console.warn('Firestore activate season notice:', e));
+
+    // Update allSeasons state
+    setAllSeasons(prev =>
+      prev.map(s => {
+        if (s.id === season.id) return archivedOldSeason;
+        if (s.id === draftSeasonId) return liveSeasonData;
+        return s;
+      })
+    );
+
+    // 5. Audit log
+    const transitionLog: AuditLog = {
+      id: `log-${Date.now()}`,
+      action: 'ROLLOVER',
+      previousValue: { seasonId: season.id, surplus: closingSurplus },
+      newValue: { seasonId: draftSeasonId, openingBalance: closingSurplus },
+      performedBy: 'Admin:SetLive',
+      timestamp: new Date().toISOString(),
+      notes: `Draft season ${draftSeasonId} set live. Opening balance: ₹${closingSurplus}`,
+    };
+    setAuditLogs(prev => [transitionLog, ...prev]);
+    saveAuditLogToFirestore(transitionLog).catch(e => console.warn('Firestore audit notice:', e));
+  };
+
   // Admin: Season Rollover Engine
   const handleRolloverSeason = (newSeasonId: string, start: string, end: string) => {
     const closingSurplus = summary.netBalance;
@@ -690,6 +853,7 @@ export default function Home() {
       endDate: end,
       openingBalance: closingSurplus,
       isActive: true,
+      status: 'ACTIVE',
       liveMonth: start,
       defaultMonthlyQuota: 200,
       months: [start, '2027-10', '2027-11', '2027-12', '2028-01', '2028-02', '2028-03', '2028-04', '2028-05', '2028-06', '2028-07', '2028-08'],
@@ -713,10 +877,24 @@ export default function Home() {
 
   // Admin: Add Transaction
   const handleAddTransaction = (txnData: Omit<Transaction, 'id' | 'sequenceNumber'>) => {
+    let finalTxnData = { ...txnData };
+    if (finalTxnData.type === 'MEMBER' && finalTxnData.metadata?.memberId) {
+      const targetMember = members.find(m => m.id === finalTxnData.metadata?.memberId);
+      if (targetMember?.isPaused) {
+        finalTxnData.type = 'CHANDA';
+        finalTxnData.description = `Chanda: ${targetMember.name} (Paused Member)`;
+        finalTxnData.metadata = {
+          ...finalTxnData.metadata,
+          donorName: `${targetMember.name} (Paused Member)`,
+          note: 'Paused member payment routed to Chanda',
+        };
+      }
+    }
+
     const nextSeq = transactions.length > 0 ? Math.max(...transactions.map(t => t.sequenceNumber)) + 1 : 1;
     const newTxn: Transaction = {
       source: 'WEB',
-      ...txnData,
+      ...finalTxnData,
       id: `txn-${Date.now()}`,
       sequenceNumber: nextSeq,
     };
@@ -860,6 +1038,11 @@ export default function Home() {
               onUpdateDefaultQuota={handleUpdateDefaultQuota}
               onSetMemberMonthOverride={handleSetMemberMonthOverride}
               onOpenSnapshotModal={() => setIsSnapshotModalOpen(true)}
+              allSeasons={allSeasons}
+              onCreateDraftSeason={handleCreateDraftSeason}
+              onSetLiveSeason={handleSetLiveSeason}
+              onTogglePauseMember={handleTogglePauseMember}
+              onDeleteSeason={handleDeleteSeason}
             />
           )}
         </div>

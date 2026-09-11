@@ -53,13 +53,7 @@ export function computeMemberDues(member: Member, season: Season): {
     };
   }
 
-  const liveMonth = season.liveMonth || (season.months && season.months[0]) || '';
-  const monthsUpToLive = season.months.filter((m) => m <= liveMonth);
-
-  let targetUpToLive = 0;
-  for (const m of monthsUpToLive) {
-    targetUpToLive += getMonthTarget(member, season, m);
-  }
+  const prevPending = member.previousYearPending || 0;
 
   let totalSeasonPaid = 0;
   if (member.payments) {
@@ -68,8 +62,26 @@ export function computeMemberDues(member: Member, season: Season): {
     }
   }
 
+  // Paused member rule: dues are frozen at paid amount, no future dues accrue
+  if (member.isPaused) {
+    return {
+      previousYearPending: prevPending,
+      currentSeasonPaid: totalSeasonPaid,
+      currentSeasonTarget: totalSeasonPaid,
+      currentSeasonDue: 0,
+      totalDue: prevPending,
+    };
+  }
+
+  const liveMonth = season.liveMonth || (season.months && season.months[0]) || '';
+  const monthsUpToLive = season.months.filter((m) => m <= liveMonth);
+
+  let targetUpToLive = 0;
+  for (const m of monthsUpToLive) {
+    targetUpToLive += getMonthTarget(member, season, m);
+  }
+
   const currentSeasonDue = Math.max(0, targetUpToLive - totalSeasonPaid);
-  const prevPending = member.previousYearPending || 0;
   const totalDue = prevPending + currentSeasonDue;
 
   return {

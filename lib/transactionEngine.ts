@@ -74,6 +74,23 @@ export function calculateMemberDues(member: Member, season: Season): {
     };
   }
 
+  if (member.isPaused) {
+    let currentSeasonPaid = 0;
+    if (member.payments) {
+      for (const val of Object.values(member.payments)) {
+        currentSeasonPaid += val || 0;
+      }
+    }
+    const previousYearPending = member.previousYearPending || 0;
+    return {
+      previousYearPending,
+      currentSeasonPaid,
+      currentSeasonTarget: currentSeasonPaid,
+      currentSeasonDue: 0,
+      totalDue: previousYearPending,
+    };
+  }
+
   const liveMonth = season.liveMonth || (season.months && season.months[0]) || '';
   const monthsUpToLive = season.months.filter((m) => m <= liveMonth);
 

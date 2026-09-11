@@ -51,6 +51,33 @@ export function subscribeToActiveSeason(
   }
 }
 
+/**
+ * Subscribe to all Season documents (Active, Draft, Archived).
+ */
+export function subscribeToAllSeasons(
+  onData: (seasons: Season[]) => void,
+  onError?: (err: FirestoreError) => void
+): Unsubscribe | null {
+  if (!db) return null;
+  try {
+    const seasonsRef = collection(db, COLLECTIONS.SEASONS);
+    return onSnapshot(seasonsRef, (snapshot) => {
+      const list: Season[] = [];
+      snapshot.forEach((d) => {
+        list.push({ ...d.data(), id: d.id } as Season);
+      });
+      list.sort((a, b) => (b.startDate || b.id).localeCompare(a.startDate || a.id));
+      onData(list);
+    }, (error) => {
+      console.warn('Firestore all seasons listener notice:', error.message);
+      onError?.(error);
+    });
+  } catch (err: any) {
+    console.warn('Firestore subscribeToAllSeasons failed:', err);
+    return null;
+  }
+}
+
 export function subscribeToSeason(
   seasonId: string, 
   onData: (season: Season | null) => void,
@@ -288,6 +315,20 @@ export async function saveSeasonToFirestore(season: Season): Promise<void> {
     await setDoc(seasonRef, season, { merge: true });
   } catch (err: any) {
     console.error('Failed to save season to Firestore:', err);
+    throw err;
+  }
+}
+
+/**
+ * Delete a draft or archived season from Firestore.
+ */
+export async function deleteSeasonFromFirestore(seasonId: string): Promise<void> {
+  if (!db || !seasonId) return;
+  try {
+    const seasonRef = doc(db, COLLECTIONS.SEASONS, seasonId);
+    await deleteDoc(seasonRef);
+  } catch (err: any) {
+    console.error('Failed to delete season from Firestore:', err);
     throw err;
   }
 }

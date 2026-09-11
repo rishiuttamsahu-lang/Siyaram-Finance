@@ -10,6 +10,7 @@ export interface Season {
   endDate: string; // "2027-08"
   openingBalance: number;
   isActive: boolean;
+  status?: 'ACTIVE' | 'DRAFT' | 'ARCHIVED' | 'CLOSED';
   liveMonth: string; // "YYYY-MM" e.g. "2026-09"
   defaultMonthlyQuota: number; // e.g. 200
   months: string[]; // ["2026-09", "2026-10", "2026-11", ...]
@@ -23,6 +24,7 @@ export interface Member {
   previousYearPending: number;
   isHonorary: boolean; // e.g. Ronik, Suraj (no dues)
   isPaused: boolean;
+  pausedAtMonth?: string;
   monthlyOverrides: Record<string, number>; // { "2026-09": 100 }
   payments: Record<string, number>; // Cumulative paid per month { "2026-09": 200 }
 }
@@ -56,6 +58,8 @@ export interface TransactionMetadata {
   buildingCode?: string;
   flatNo?: string;
   category?: string;
+  donorName?: string;
+  note?: string;
 }
 
 export interface Transaction {

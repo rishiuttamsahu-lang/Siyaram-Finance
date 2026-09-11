@@ -280,6 +280,46 @@ ${lines.join('\n')}${duesList.length > 20 ? `\n<i>...and ${duesList.length - 20}
             return new Response('OK');
           }
 
+          // Paused Member Rule: dues are frozen; payments route directly to General Chanda
+          if (member.isPaused) {
+            const seq = await db.getNextSequenceNumber();
+            const txnId = `txn-${Date.now()}-${seq}`;
+            const newTxn: Transaction = {
+              id: txnId,
+              sequenceNumber: seq,
+              timestamp: new Date().toISOString(),
+              type: 'CHANDA',
+              category: 'General Chanda',
+              amount: command.amount,
+              mode: command.isOnline ? 'ONLINE' : 'OFFLINE',
+              status: 'ACTIVE',
+              entityId: member.id,
+              entityName: `${member.name} (Paused Member)`,
+              details: { note: 'Paused member contribution routed to General Chanda' },
+              performedBy: `Telegram:${senderName} (${senderId})`,
+            };
+            await db.saveTransaction(newTxn);
+
+            const audit: AuditLog = {
+              id: `audit-${Date.now()}`,
+              timestamp: new Date().toISOString(),
+              action: 'CREATE',
+              txnId,
+              targetType: 'TRANSACTION',
+              performedBy: `Telegram:${senderName} (${senderId})`,
+              newValue: newTxn,
+              notes: `Paused member ${member.name} contribution routed to Chanda`,
+            };
+            await db.saveAuditLog(audit);
+
+            const successMsg = `✅ <b>Chanda Recorded</b> · #${seq}\n\n` +
+              `👤 <b>${member.name} (Paused Member)</b>\n` +
+              `💰 Amount: <b>${formatINR(command.amount)}</b> [${command.isOnline ? 'ONLINE' : 'CASH'}]\n` +
+              `ℹ️ <i>Dues are frozen. Contribution routed directly to General Chanda.</i>`;
+            await sendTelegramMessage(env.TELEGRAM_BOT_TOKEN, chatId, successMsg, msg.message_id);
+            return new Response('OK');
+          }
+
           // Perform Waterfall Allocation
           const allocation = allocateMemberPayment(member, season, command.amount);
 

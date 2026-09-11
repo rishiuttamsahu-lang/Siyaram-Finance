@@ -77,6 +77,27 @@ export function computeMemberDue(
     };
   }
 
+  if (member.isPaused) {
+    let currentSeasonPaid = 0;
+    if (member.payments) {
+      for (const val of Object.values(member.payments)) {
+        currentSeasonPaid += val || 0;
+      }
+    }
+    const previousYearPending = member.previousYearPending || 0;
+    return {
+      memberId: member.id,
+      memberName: member.name,
+      previousYearPending,
+      currentSeasonPaid,
+      currentSeasonTarget: currentSeasonPaid,
+      currentSeasonPending: 0,
+      totalPending: previousYearPending,
+      isHonorary: false,
+      isPaused: true,
+    };
+  }
+
   // Active tracked months: fallback gracefully if trackUpToMonth is empty or uninitialized
   const targetMonth = (trackUpToMonth && trackUpToMonth.trim() !== '')
     ? trackUpToMonth
