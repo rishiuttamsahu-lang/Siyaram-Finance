@@ -1,0 +1,2416 @@
+{
+  "extractedAt": "2026-09-11T09:50:00.000Z",
+  "source": "Old Website Visual DOM Extraction (Verified by User)",
+  "verifiedBy": "Admin",
+  "season": {
+    "id": "2025-2026",
+    "name": "Ganesh Utsav 2025-2026",
+    "startDate": "2025-09",
+    "endDate": "2026-09",
+    "openingBalance": 6500,
+    "isActive": true,
+    "liveMonth": "2026-09",
+    "defaultMonthlyQuota": 200,
+    "months": [
+      "2025-09",
+      "2025-10",
+      "2025-11",
+      "2025-12",
+      "2026-01",
+      "2026-02",
+      "2026-03",
+      "2026-04",
+      "2026-05",
+      "2026-06",
+      "2026-07",
+      "2026-08",
+      "2026-09"
+    ],
+    "blockedMonths": [
+      "2025-12",
+      "2026-01",
+      "2026-02",
+      "2026-03",
+      "2026-04",
+      "2026-05"
+    ],
+    "monthQuotas": {
+      "2025-09": 100,
+      "2025-10": 100,
+      "2025-11": 100,
+      "2025-12": 100,
+      "2026-01": 100,
+      "2026-02": 100,
+      "2026-03": 100,
+      "2026-04": 100,
+      "2026-05": 100,
+      "2026-06": 200,
+      "2026-07": 200,
+      "2026-08": 200,
+      "2026-09": 250
+    }
+  },
+  "members": [
+    {
+      "id": "m-piyush",
+      "name": "PIYUSH",
+      "previousYearPending": 0,
+      "isHonorary": false,
+      "isPaused": false,
+      "monthlyOverrides": {},
+      "payments": {
+        "2025-09": 100,
+        "2025-10": 100,
+        "2025-11": 100,
+        "2026-06": 191
+      }
+    },
+    {
+      "id": "m-aryan",
+      "name": "ARYAN",
+      "previousYearPending": 0,
+      "isHonorary": false,
+      "isPaused": false,
+      "monthlyOverrides": {},
+      "payments": {
+        "2025-09": 100,
+        "2025-10": 100,
+        "2025-11": 100,
+        "2026-06": 200,
+        "2026-07": 200,
+        "2026-08": 160
+      }
+    },
+    {
+      "id": "m-aman",
+      "name": "AMAN",
+      "previousYearPending": 0,
+      "isHonorary": false,
+      "isPaused": false,
+      "monthlyOverrides": {},
+      "payments": {
+        "2025-09": 100,
+        "2025-10": 100,
+        "2025-11": 100,
+        "2026-06": 200,
+        "2026-07": 200,
+        "2026-08": 140
+      }
+    },
+    {
+      "id": "m-rishi",
+      "name": "RISHI",
+      "previousYearPending": 0,
+      "isHonorary": false,
+      "isPaused": false,
+      "monthlyOverrides": {},
+      "payments": {
+        "2025-09": 100,
+        "2025-10": 100,
+        "2025-11": 100,
+        "2026-06": 200,
+        "2026-07": 200,
+        "2026-08": 184
+      }
+    },
+    {
+      "id": "m-pankaj",
+      "name": "PANKAJ",
+      "previousYearPending": 0,
+      "isHonorary": false,
+      "isPaused": false,
+      "monthlyOverrides": {},
+      "payments": {
+        "2025-09": 100,
+        "2025-10": 100,
+        "2025-11": 100,
+        "2026-06": 200,
+        "2026-07": 200,
+        "2026-08": 90
+      }
+    },
+    {
+      "id": "m-pavan",
+      "name": "PAVAN",
+      "previousYearPending": 0,
+      "isHonorary": false,
+      "isPaused": false,
+      "monthlyOverrides": {},
+      "payments": {
+        "2025-09": 100,
+        "2025-10": 100,
+        "2025-11": 100,
+        "2026-06": 200,
+        "2026-07": 200,
+        "2026-08": 130
+      }
+    },
+    {
+      "id": "m-ayush-s",
+      "name": "AYUSH.S",
+      "previousYearPending": 0,
+      "isHonorary": false,
+      "isPaused": false,
+      "monthlyOverrides": {},
+      "payments": {
+        "2025-09": 100,
+        "2025-10": 100,
+        "2025-11": 100,
+        "2026-06": 200
+      }
+    },
+    {
+      "id": "m-ronik",
+      "name": "RONIK",
+      "previousYearPending": 0,
+      "isHonorary": true,
+      "isPaused": false,
+      "monthlyOverrides": {},
+      "payments": {}
+    },
+    {
+      "id": "m-suraj",
+      "name": "SURAJ",
+      "previousYearPending": 0,
+      "isHonorary": true,
+      "isPaused": false,
+      "monthlyOverrides": {},
+      "payments": {}
+    },
+    {
+      "id": "m-sharavan",
+      "name": "SHARAVAN",
+      "previousYearPending": 0,
+      "isHonorary": false,
+      "isPaused": false,
+      "monthlyOverrides": {
+        "2025-09": 0,
+        "2025-10": 0,
+        "2025-11": 0,
+        "2025-12": 0,
+        "2026-06": 0
+      },
+      "payments": {
+        "2026-07": 200,
+        "2026-08": 200,
+        "2026-09": 90
+      }
+    }
+  ],
+  "buildings": [
+    {
+      "id": "bld-A",
+      "name": "A Wing",
+      "code": "A",
+      "floors": [
+        {
+          "floorName": "3F",
+          "flats": [
+            {
+              "flatNo": "301",
+              "residentName": "-",
+              "amountPaid": 0,
+              "isPaid": false,
+              "onlinePaid": 0,
+              "offlinePaid": 0
+            },
+            {
+              "flatNo": "302",
+              "residentName": "-",
+              "amountPaid": 0,
+              "isPaid": false,
+              "onlinePaid": 0,
+              "offlinePaid": 0
+            },
+            {
+              "flatNo": "303",
+              "residentName": "-",
+              "amountPaid": 0,
+              "isPaid": false,
+              "onlinePaid": 0,
+              "offlinePaid": 0
+            },
+            {
+              "flatNo": "304",
+              "residentName": "Rahul",
+              "amountPaid": 500,
+              "isPaid": true,
+              "paymentMode": "ONLINE",
+              "onlinePaid": 500,
+              "offlinePaid": 0
+            }
+          ]
+        },
+        {
+          "floorName": "2F",
+          "flats": [
+            {
+              "flatNo": "201",
+              "residentName": "Chaudhary",
+              "amountPaid": 1100,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 1100
+            },
+            {
+              "flatNo": "202",
+              "residentName": "-",
+              "amountPaid": 0,
+              "isPaid": false,
+              "onlinePaid": 0,
+              "offlinePaid": 0
+            },
+            {
+              "flatNo": "203",
+              "residentName": "Rohit",
+              "amountPaid": 1100,
+              "isPaid": true,
+              "paymentMode": "SPLIT",
+              "onlinePaid": 1000,
+              "offlinePaid": 100
+            },
+            {
+              "flatNo": "204",
+              "residentName": "Varsha",
+              "amountPaid": 500,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 500
+            }
+          ]
+        },
+        {
+          "floorName": "1F",
+          "flats": [
+            {
+              "flatNo": "101",
+              "residentName": "Narayan",
+              "amountPaid": 200,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 200
+            },
+            {
+              "flatNo": "102",
+              "residentName": "Kiran",
+              "amountPaid": 400,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 400
+            },
+            {
+              "flatNo": "103",
+              "residentName": "Naresh",
+              "amountPaid": 500,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 500
+            },
+            {
+              "flatNo": "104",
+              "residentName": "Shankar",
+              "amountPaid": 100,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 100
+            }
+          ]
+        },
+        {
+          "floorName": "GR",
+          "flats": [
+            {
+              "flatNo": "001",
+              "residentName": "-",
+              "amountPaid": 0,
+              "isPaid": false,
+              "onlinePaid": 0,
+              "offlinePaid": 0
+            },
+            {
+              "flatNo": "002",
+              "residentName": "-",
+              "amountPaid": 0,
+              "isPaid": false,
+              "onlinePaid": 0,
+              "offlinePaid": 0
+            },
+            {
+              "flatNo": "003",
+              "residentName": "-",
+              "amountPaid": 0,
+              "isPaid": false,
+              "onlinePaid": 0,
+              "offlinePaid": 0
+            },
+            {
+              "flatNo": "004",
+              "residentName": "-",
+              "amountPaid": 0,
+              "isPaid": false,
+              "onlinePaid": 0,
+              "offlinePaid": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bld-B",
+      "name": "B Wing",
+      "code": "B",
+      "floors": [
+        {
+          "floorName": "3F",
+          "flats": [
+            {
+              "flatNo": "301",
+              "residentName": "Ananya",
+              "amountPaid": 200,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 200
+            },
+            {
+              "flatNo": "302",
+              "residentName": "Phoolchand",
+              "amountPaid": 50,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 50
+            },
+            {
+              "flatNo": "303",
+              "residentName": "-",
+              "amountPaid": 0,
+              "isPaid": false,
+              "onlinePaid": 0,
+              "offlinePaid": 0
+            },
+            {
+              "flatNo": "304",
+              "residentName": "Ketan",
+              "amountPaid": 150,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 150
+            }
+          ]
+        },
+        {
+          "floorName": "2F",
+          "flats": [
+            {
+              "flatNo": "201",
+              "residentName": "-",
+              "amountPaid": 0,
+              "isPaid": false,
+              "onlinePaid": 0,
+              "offlinePaid": 0
+            },
+            {
+              "flatNo": "202",
+              "residentName": "Maharaj",
+              "amountPaid": 100,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 100
+            },
+            {
+              "flatNo": "203",
+              "residentName": "-",
+              "amountPaid": 0,
+              "isPaid": false,
+              "onlinePaid": 0,
+              "offlinePaid": 0
+            },
+            {
+              "flatNo": "204",
+              "residentName": "Nimma",
+              "amountPaid": 100,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 100
+            }
+          ]
+        },
+        {
+          "floorName": "1F",
+          "flats": [
+            {
+              "flatNo": "101",
+              "residentName": "None",
+              "amountPaid": 50,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 50
+            },
+            {
+              "flatNo": "102",
+              "residentName": "-",
+              "amountPaid": 0,
+              "isPaid": false,
+              "onlinePaid": 0,
+              "offlinePaid": 0
+            },
+            {
+              "flatNo": "103",
+              "residentName": "-",
+              "amountPaid": 0,
+              "isPaid": false,
+              "onlinePaid": 0,
+              "offlinePaid": 0
+            },
+            {
+              "flatNo": "104",
+              "residentName": "-",
+              "amountPaid": 0,
+              "isPaid": false,
+              "onlinePaid": 0,
+              "offlinePaid": 0
+            }
+          ]
+        },
+        {
+          "floorName": "GR",
+          "flats": [
+            {
+              "flatNo": "001",
+              "residentName": "-",
+              "amountPaid": 0,
+              "isPaid": false,
+              "onlinePaid": 0,
+              "offlinePaid": 0
+            },
+            {
+              "flatNo": "002",
+              "residentName": "Dimpu",
+              "amountPaid": 100,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 100
+            },
+            {
+              "flatNo": "003",
+              "residentName": "Dasrath Mane",
+              "amountPaid": 100,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bld-B2",
+      "name": "B2 Wing",
+      "code": "B2",
+      "floors": [
+        {
+          "floorName": "3F",
+          "flats": [
+            {
+              "flatNo": "301",
+              "residentName": "None",
+              "amountPaid": 100,
+              "isPaid": true,
+              "paymentMode": "ONLINE",
+              "onlinePaid": 100,
+              "offlinePaid": 0
+            },
+            {
+              "flatNo": "302",
+              "residentName": "Kavitva",
+              "amountPaid": 100,
+              "isPaid": true,
+              "paymentMode": "ONLINE",
+              "onlinePaid": 100,
+              "offlinePaid": 0
+            },
+            {
+              "flatNo": "303",
+              "residentName": "Duruwasalu",
+              "amountPaid": 50,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 50
+            }
+          ]
+        },
+        {
+          "floorName": "2F",
+          "flats": [
+            {
+              "flatNo": "201",
+              "residentName": "Manus",
+              "amountPaid": 100,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 100
+            },
+            {
+              "flatNo": "202",
+              "residentName": "Ajay",
+              "amountPaid": 100,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 100
+            },
+            {
+              "flatNo": "203",
+              "residentName": "-",
+              "amountPaid": 0,
+              "isPaid": false,
+              "onlinePaid": 0,
+              "offlinePaid": 0
+            }
+          ]
+        },
+        {
+          "floorName": "1F",
+          "flats": [
+            {
+              "flatNo": "101",
+              "residentName": "none",
+              "amountPaid": 100,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 100
+            },
+            {
+              "flatNo": "102",
+              "residentName": "Sai Kumar",
+              "amountPaid": 250,
+              "isPaid": true,
+              "paymentMode": "ONLINE",
+              "onlinePaid": 250,
+              "offlinePaid": 0
+            },
+            {
+              "flatNo": "103",
+              "residentName": "None",
+              "amountPaid": 50,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 50
+            }
+          ]
+        },
+        {
+          "floorName": "GR",
+          "flats": [
+            {
+              "flatNo": "001",
+              "residentName": "-",
+              "amountPaid": 0,
+              "isPaid": false,
+              "onlinePaid": 0,
+              "offlinePaid": 0
+            },
+            {
+              "flatNo": "002",
+              "residentName": "Sai",
+              "amountPaid": 50,
+              "isPaid": true,
+              "paymentMode": "OFFLINE",
+              "onlinePaid": 0,
+              "offlinePaid": 50
+            },
+            {
+              "flatNo": "003",
+              "residentName": "-",
+              "amountPaid": 0,
+              "isPaid": false,
+              "onlinePaid": 0,
+              "offlinePaid": 0
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "chanda": [
+    {
+      "name": "Ronik Patel",
+      "amount": 200,
+      "mode": "OFFLINE"
+    },
+    {
+      "name": "Tailor",
+      "amount": 200,
+      "mode": "OFFLINE"
+    },
+    {
+      "name": "Laundry",
+      "amount": 100,
+      "mode": "OFFLINE"
+    },
+    {
+      "name": "Lucky",
+      "amount": 200,
+      "mode": "OFFLINE"
+    },
+    {
+      "name": "Dost",
+      "amount": 50,
+      "mode": "OFFLINE"
+    },
+    {
+      "name": "Shawant",
+      "amount": 500,
+      "mode": "OFFLINE"
+    },
+    {
+      "name": "Ayush Gupta",
+      "amount": 100,
+      "mode": "OFFLINE"
+    },
+    {
+      "name": "Chawl",
+      "amount": 50,
+      "mode": "ONLINE"
+    },
+    {
+      "name": "Pavan Dost",
+      "amount": 200,
+      "mode": "ONLINE"
+    },
+    {
+      "name": "Chandrakant",
+      "amount": 100,
+      "mode": "ONLINE"
+    },
+    {
+      "name": "Dost",
+      "amount": 50,
+      "mode": "OFFLINE"
+    },
+    {
+      "name": "Chawl",
+      "amount": 20,
+      "mode": "OFFLINE"
+    },
+    {
+      "name": "Sumit Kirana",
+      "amount": 50,
+      "mode": "OFFLINE"
+    },
+    {
+      "name": "Shivcut-Chawl",
+      "amount": 100,
+      "mode": "OFFLINE"
+    },
+    {
+      "name": "Yadav",
+      "amount": 250,
+      "mode": "OFFLINE"
+    },
+    {
+      "name": "Kesarvani",
+      "amount": 101,
+      "mode": "OFFLINE"
+    }
+  ],
+  "expenses": [
+    {
+      "description": "Female Plug",
+      "amount": 20,
+      "date": "2026-09-08",
+      "time": "20:06:34",
+      "mode": "OFFLINE"
+    },
+    {
+      "description": "Glitter",
+      "amount": 10,
+      "date": "2026-09-07",
+      "time": "22:16:11",
+      "mode": "OFFLINE"
+    },
+    {
+      "description": "Thread",
+      "amount": 10,
+      "date": "2026-09-03",
+      "time": "22:27:53",
+      "mode": "OFFLINE"
+    },
+    {
+      "description": "Black Kapda",
+      "amount": 100,
+      "date": "2026-09-02",
+      "time": "19:16:14",
+      "mode": "ONLINE"
+    },
+    {
+      "description": "Stapler Pin",
+      "amount": 40,
+      "date": "2026-09-01",
+      "time": "22:41:29",
+      "mode": "OFFLINE"
+    },
+    {
+      "description": "Strip Light",
+      "amount": 191,
+      "date": "2026-08-31",
+      "time": "22:52:34",
+      "mode": "ONLINE"
+    },
+    {
+      "description": "Rope Light",
+      "amount": 240,
+      "date": "2026-08-31",
+      "time": "20:54:21",
+      "mode": "ONLINE"
+    },
+    {
+      "description": "Wire",
+      "amount": 12,
+      "date": "2026-08-25",
+      "time": "14:22:44",
+      "mode": "ONLINE"
+    },
+    {
+      "description": "Connector",
+      "amount": 100,
+      "date": "2026-08-25",
+      "time": "10:16:53",
+      "mode": "ONLINE"
+    },
+    {
+      "description": "Fuse",
+      "amount": 10,
+      "date": "2026-08-20",
+      "time": "20:27:24",
+      "mode": "OFFLINE"
+    },
+    {
+      "description": "Gum",
+      "amount": 20,
+      "date": "2026-08-18",
+      "time": "18:20:52",
+      "mode": "OFFLINE"
+    },
+    {
+      "description": "Paint",
+      "amount": 30,
+      "date": "2026-08-18",
+      "time": "13:01:24",
+      "mode": "OFFLINE"
+    },
+    {
+      "description": "Tape",
+      "amount": 50,
+      "date": "2026-08-16",
+      "time": "22:55:05",
+      "mode": "OFFLINE"
+    },
+    {
+      "description": "Ply",
+      "amount": 270,
+      "date": "2026-08-16",
+      "time": "17:05:25",
+      "mode": "ONLINE"
+    },
+    {
+      "description": "Cotton",
+      "amount": 300,
+      "date": "2026-08-15",
+      "time": "22:33:10",
+      "mode": "OFFLINE"
+    },
+    {
+      "description": "Light",
+      "amount": 187,
+      "date": "2026-08-14",
+      "time": "14:39:56",
+      "mode": "ONLINE"
+    },
+    {
+      "description": "Tape",
+      "amount": 10,
+      "date": "2026-07-13",
+      "time": "10:13:59",
+      "mode": "OFFLINE"
+    }
+  ],
+  "summary": {
+    "openingBalance": 6500,
+    "totalInflows": 14106,
+    "totalExpenses": 1600,
+    "onlineInflows": 2300,
+    "onlineExpenses": 1100,
+    "netOnlineBalance": 1200,
+    "offlineInflows": 11806,
+    "offlineExpenses": 500,
+    "netOfflineBalance": 11306,
+    "netCashInHand": 17806,
+    "totalNetBalance": 19006,
+    "breakdown": {
+      "membersTotal": 5685,
+      "buildingsTotal": 6150,
+      "buildingsOnline": 1950,
+      "buildingsOffline": 4200,
+      "chandaTotal": 2271,
+      "chandaOnline": 350,
+      "chandaOffline": 1921,
+      "expensesTotal": 1600,
+      "expensesOnline": 1100,
+      "expensesOffline": 500
+    }
+  },
+  "transactions": [
+    {
+      "id": "txn-m-m-piyush-2025-09",
+      "sequenceNumber": 1,
+      "timestamp": "2025-09-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "PIYUSH Dues (2025-09)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-piyush",
+        "memberName": "PIYUSH",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-piyush-2025-10",
+      "sequenceNumber": 2,
+      "timestamp": "2025-10-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "PIYUSH Dues (2025-10)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-piyush",
+        "memberName": "PIYUSH",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-piyush-2025-11",
+      "sequenceNumber": 3,
+      "timestamp": "2025-11-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "PIYUSH Dues (2025-11)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-piyush",
+        "memberName": "PIYUSH",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-piyush-2026-06",
+      "sequenceNumber": 4,
+      "timestamp": "2026-06-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 191,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "PIYUSH Dues (2026-06)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-piyush",
+        "memberName": "PIYUSH",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-aryan-2025-09",
+      "sequenceNumber": 5,
+      "timestamp": "2025-09-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "ARYAN Dues (2025-09)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-aryan",
+        "memberName": "ARYAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-aryan-2025-10",
+      "sequenceNumber": 6,
+      "timestamp": "2025-10-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "ARYAN Dues (2025-10)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-aryan",
+        "memberName": "ARYAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-aryan-2025-11",
+      "sequenceNumber": 7,
+      "timestamp": "2025-11-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "ARYAN Dues (2025-11)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-aryan",
+        "memberName": "ARYAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-aryan-2026-06",
+      "sequenceNumber": 8,
+      "timestamp": "2026-06-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 200,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "ARYAN Dues (2026-06)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-aryan",
+        "memberName": "ARYAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-aryan-2026-07",
+      "sequenceNumber": 9,
+      "timestamp": "2026-07-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 200,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "ARYAN Dues (2026-07)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-aryan",
+        "memberName": "ARYAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-aryan-2026-08",
+      "sequenceNumber": 10,
+      "timestamp": "2026-08-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 160,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "ARYAN Dues (2026-08)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-aryan",
+        "memberName": "ARYAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-aman-2025-09",
+      "sequenceNumber": 11,
+      "timestamp": "2025-09-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "AMAN Dues (2025-09)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-aman",
+        "memberName": "AMAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-aman-2025-10",
+      "sequenceNumber": 12,
+      "timestamp": "2025-10-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "AMAN Dues (2025-10)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-aman",
+        "memberName": "AMAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-aman-2025-11",
+      "sequenceNumber": 13,
+      "timestamp": "2025-11-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "AMAN Dues (2025-11)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-aman",
+        "memberName": "AMAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-aman-2026-06",
+      "sequenceNumber": 14,
+      "timestamp": "2026-06-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 200,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "AMAN Dues (2026-06)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-aman",
+        "memberName": "AMAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-aman-2026-07",
+      "sequenceNumber": 15,
+      "timestamp": "2026-07-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 200,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "AMAN Dues (2026-07)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-aman",
+        "memberName": "AMAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-aman-2026-08",
+      "sequenceNumber": 16,
+      "timestamp": "2026-08-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 140,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "AMAN Dues (2026-08)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-aman",
+        "memberName": "AMAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-rishi-2025-09",
+      "sequenceNumber": 17,
+      "timestamp": "2025-09-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "RISHI Dues (2025-09)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-rishi",
+        "memberName": "RISHI",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-rishi-2025-10",
+      "sequenceNumber": 18,
+      "timestamp": "2025-10-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "RISHI Dues (2025-10)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-rishi",
+        "memberName": "RISHI",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-rishi-2025-11",
+      "sequenceNumber": 19,
+      "timestamp": "2025-11-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "RISHI Dues (2025-11)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-rishi",
+        "memberName": "RISHI",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-rishi-2026-06",
+      "sequenceNumber": 20,
+      "timestamp": "2026-06-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 200,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "RISHI Dues (2026-06)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-rishi",
+        "memberName": "RISHI",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-rishi-2026-07",
+      "sequenceNumber": 21,
+      "timestamp": "2026-07-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 200,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "RISHI Dues (2026-07)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-rishi",
+        "memberName": "RISHI",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-rishi-2026-08",
+      "sequenceNumber": 22,
+      "timestamp": "2026-08-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 184,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "RISHI Dues (2026-08)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-rishi",
+        "memberName": "RISHI",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-pankaj-2025-09",
+      "sequenceNumber": 23,
+      "timestamp": "2025-09-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "PANKAJ Dues (2025-09)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-pankaj",
+        "memberName": "PANKAJ",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-pankaj-2025-10",
+      "sequenceNumber": 24,
+      "timestamp": "2025-10-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "PANKAJ Dues (2025-10)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-pankaj",
+        "memberName": "PANKAJ",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-pankaj-2025-11",
+      "sequenceNumber": 25,
+      "timestamp": "2025-11-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "PANKAJ Dues (2025-11)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-pankaj",
+        "memberName": "PANKAJ",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-pankaj-2026-06",
+      "sequenceNumber": 26,
+      "timestamp": "2026-06-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 200,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "PANKAJ Dues (2026-06)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-pankaj",
+        "memberName": "PANKAJ",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-pankaj-2026-07",
+      "sequenceNumber": 27,
+      "timestamp": "2026-07-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 200,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "PANKAJ Dues (2026-07)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-pankaj",
+        "memberName": "PANKAJ",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-pankaj-2026-08",
+      "sequenceNumber": 28,
+      "timestamp": "2026-08-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 90,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "PANKAJ Dues (2026-08)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-pankaj",
+        "memberName": "PANKAJ",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-pavan-2025-09",
+      "sequenceNumber": 29,
+      "timestamp": "2025-09-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "PAVAN Dues (2025-09)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-pavan",
+        "memberName": "PAVAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-pavan-2025-10",
+      "sequenceNumber": 30,
+      "timestamp": "2025-10-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "PAVAN Dues (2025-10)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-pavan",
+        "memberName": "PAVAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-pavan-2025-11",
+      "sequenceNumber": 31,
+      "timestamp": "2025-11-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "PAVAN Dues (2025-11)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-pavan",
+        "memberName": "PAVAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-pavan-2026-06",
+      "sequenceNumber": 32,
+      "timestamp": "2026-06-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 200,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "PAVAN Dues (2026-06)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-pavan",
+        "memberName": "PAVAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-pavan-2026-07",
+      "sequenceNumber": 33,
+      "timestamp": "2026-07-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 200,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "PAVAN Dues (2026-07)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-pavan",
+        "memberName": "PAVAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-pavan-2026-08",
+      "sequenceNumber": 34,
+      "timestamp": "2026-08-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 130,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "PAVAN Dues (2026-08)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-pavan",
+        "memberName": "PAVAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-ayush-s-2025-09",
+      "sequenceNumber": 35,
+      "timestamp": "2025-09-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "AYUSH.S Dues (2025-09)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-ayush-s",
+        "memberName": "AYUSH.S",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-ayush-s-2025-10",
+      "sequenceNumber": 36,
+      "timestamp": "2025-10-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "AYUSH.S Dues (2025-10)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-ayush-s",
+        "memberName": "AYUSH.S",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-ayush-s-2025-11",
+      "sequenceNumber": 37,
+      "timestamp": "2025-11-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "AYUSH.S Dues (2025-11)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-ayush-s",
+        "memberName": "AYUSH.S",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-ayush-s-2026-06",
+      "sequenceNumber": 38,
+      "timestamp": "2026-06-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 200,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "AYUSH.S Dues (2026-06)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-ayush-s",
+        "memberName": "AYUSH.S",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-sharavan-2026-07",
+      "sequenceNumber": 39,
+      "timestamp": "2026-07-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 200,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "SHARAVAN Dues (2026-07)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-sharavan",
+        "memberName": "SHARAVAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-sharavan-2026-08",
+      "sequenceNumber": 40,
+      "timestamp": "2026-08-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 200,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "SHARAVAN Dues (2026-08)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-sharavan",
+        "memberName": "SHARAVAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-m-m-sharavan-2026-09",
+      "sequenceNumber": 41,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "MEMBER",
+      "amount": 90,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "SHARAVAN Dues (2026-09)",
+      "source": "WEB",
+      "metadata": {
+        "memberId": "m-sharavan",
+        "memberName": "SHARAVAN",
+        "category": "Member Due"
+      }
+    },
+    {
+      "id": "txn-bld-A-304",
+      "sequenceNumber": 42,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 500,
+      "mode": "ONLINE",
+      "status": "ACTIVE",
+      "description": "A Wing Flat 304 (Rahul)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "A",
+        "flatNo": "304",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-A-201",
+      "sequenceNumber": 43,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 1100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "A Wing Flat 201 (Chaudhary)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "A",
+        "flatNo": "201",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-A-203-on",
+      "sequenceNumber": 44,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 1000,
+      "mode": "ONLINE",
+      "status": "ACTIVE",
+      "description": "A Wing Flat 203 (Rohit) [Online]",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "A",
+        "flatNo": "203",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-A-203-off",
+      "sequenceNumber": 45,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "A Wing Flat 203 (Rohit) [Cash]",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "A",
+        "flatNo": "203",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-A-204",
+      "sequenceNumber": 46,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 500,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "A Wing Flat 204 (Varsha)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "A",
+        "flatNo": "204",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-A-101",
+      "sequenceNumber": 47,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 200,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "A Wing Flat 101 (Narayan)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "A",
+        "flatNo": "101",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-A-102",
+      "sequenceNumber": 48,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 400,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "A Wing Flat 102 (Kiran)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "A",
+        "flatNo": "102",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-A-103",
+      "sequenceNumber": 49,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 500,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "A Wing Flat 103 (Naresh)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "A",
+        "flatNo": "103",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-A-104",
+      "sequenceNumber": 50,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "A Wing Flat 104 (Shankar)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "A",
+        "flatNo": "104",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-B-301",
+      "sequenceNumber": 51,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 200,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "B Wing Flat 301 (Ananya)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "B",
+        "flatNo": "301",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-B-302",
+      "sequenceNumber": 52,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 50,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "B Wing Flat 302 (Phoolchand)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "B",
+        "flatNo": "302",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-B-304",
+      "sequenceNumber": 53,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 150,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "B Wing Flat 304 (Ketan)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "B",
+        "flatNo": "304",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-B-202",
+      "sequenceNumber": 54,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "B Wing Flat 202 (Maharaj)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "B",
+        "flatNo": "202",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-B-204",
+      "sequenceNumber": 55,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "B Wing Flat 204 (Nimma)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "B",
+        "flatNo": "204",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-B-101",
+      "sequenceNumber": 56,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 50,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "B Wing Flat 101 (None)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "B",
+        "flatNo": "101",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-B-002",
+      "sequenceNumber": 57,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "B Wing Flat 002 (Dimpu)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "B",
+        "flatNo": "002",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-B-003",
+      "sequenceNumber": 58,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "B Wing Flat 003 (Dasrath Mane)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "B",
+        "flatNo": "003",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-B2-301",
+      "sequenceNumber": 59,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 100,
+      "mode": "ONLINE",
+      "status": "ACTIVE",
+      "description": "B2 Wing Flat 301 (None)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "B2",
+        "flatNo": "301",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-B2-302",
+      "sequenceNumber": 60,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 100,
+      "mode": "ONLINE",
+      "status": "ACTIVE",
+      "description": "B2 Wing Flat 302 (Kavitva)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "B2",
+        "flatNo": "302",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-B2-303",
+      "sequenceNumber": 61,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 50,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "B2 Wing Flat 303 (Duruwasalu)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "B2",
+        "flatNo": "303",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-B2-201",
+      "sequenceNumber": 62,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "B2 Wing Flat 201 (Manus)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "B2",
+        "flatNo": "201",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-B2-202",
+      "sequenceNumber": 63,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "B2 Wing Flat 202 (Ajay)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "B2",
+        "flatNo": "202",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-B2-101",
+      "sequenceNumber": 64,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "B2 Wing Flat 101 (none)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "B2",
+        "flatNo": "101",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-B2-102",
+      "sequenceNumber": 65,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 250,
+      "mode": "ONLINE",
+      "status": "ACTIVE",
+      "description": "B2 Wing Flat 102 (Sai Kumar)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "B2",
+        "flatNo": "102",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-B2-103",
+      "sequenceNumber": 66,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 50,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "B2 Wing Flat 103 (None)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "B2",
+        "flatNo": "103",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-bld-B2-002",
+      "sequenceNumber": 67,
+      "timestamp": "2026-09-01T12:00:00.000Z",
+      "type": "BUILDING",
+      "amount": 50,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "B2 Wing Flat 002 (Sai)",
+      "source": "WEB",
+      "metadata": {
+        "buildingCode": "B2",
+        "flatNo": "002",
+        "category": "Building Chanda"
+      }
+    },
+    {
+      "id": "txn-chanda-1",
+      "sequenceNumber": 68,
+      "timestamp": "2026-09-02T12:00:00.000Z",
+      "type": "CHANDA",
+      "amount": 200,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Chanda: Ronik Patel",
+      "source": "WEB",
+      "metadata": {
+        "category": "General Chanda"
+      }
+    },
+    {
+      "id": "txn-chanda-2",
+      "sequenceNumber": 69,
+      "timestamp": "2026-09-02T12:00:00.000Z",
+      "type": "CHANDA",
+      "amount": 200,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Chanda: Tailor",
+      "source": "WEB",
+      "metadata": {
+        "category": "General Chanda"
+      }
+    },
+    {
+      "id": "txn-chanda-3",
+      "sequenceNumber": 70,
+      "timestamp": "2026-09-02T12:00:00.000Z",
+      "type": "CHANDA",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Chanda: Laundry",
+      "source": "WEB",
+      "metadata": {
+        "category": "General Chanda"
+      }
+    },
+    {
+      "id": "txn-chanda-4",
+      "sequenceNumber": 71,
+      "timestamp": "2026-09-02T12:00:00.000Z",
+      "type": "CHANDA",
+      "amount": 200,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Chanda: Lucky",
+      "source": "WEB",
+      "metadata": {
+        "category": "General Chanda"
+      }
+    },
+    {
+      "id": "txn-chanda-5",
+      "sequenceNumber": 72,
+      "timestamp": "2026-09-02T12:00:00.000Z",
+      "type": "CHANDA",
+      "amount": 50,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Chanda: Dost",
+      "source": "WEB",
+      "metadata": {
+        "category": "General Chanda"
+      }
+    },
+    {
+      "id": "txn-chanda-6",
+      "sequenceNumber": 73,
+      "timestamp": "2026-09-02T12:00:00.000Z",
+      "type": "CHANDA",
+      "amount": 500,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Chanda: Shawant",
+      "source": "WEB",
+      "metadata": {
+        "category": "General Chanda"
+      }
+    },
+    {
+      "id": "txn-chanda-7",
+      "sequenceNumber": 74,
+      "timestamp": "2026-09-02T12:00:00.000Z",
+      "type": "CHANDA",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Chanda: Ayush Gupta",
+      "source": "WEB",
+      "metadata": {
+        "category": "General Chanda"
+      }
+    },
+    {
+      "id": "txn-chanda-8",
+      "sequenceNumber": 75,
+      "timestamp": "2026-09-02T12:00:00.000Z",
+      "type": "CHANDA",
+      "amount": 50,
+      "mode": "ONLINE",
+      "status": "ACTIVE",
+      "description": "Chanda: Chawl",
+      "source": "WEB",
+      "metadata": {
+        "category": "General Chanda"
+      }
+    },
+    {
+      "id": "txn-chanda-9",
+      "sequenceNumber": 76,
+      "timestamp": "2026-09-02T12:00:00.000Z",
+      "type": "CHANDA",
+      "amount": 200,
+      "mode": "ONLINE",
+      "status": "ACTIVE",
+      "description": "Chanda: Pavan Dost",
+      "source": "WEB",
+      "metadata": {
+        "category": "General Chanda"
+      }
+    },
+    {
+      "id": "txn-chanda-10",
+      "sequenceNumber": 77,
+      "timestamp": "2026-09-02T12:00:00.000Z",
+      "type": "CHANDA",
+      "amount": 100,
+      "mode": "ONLINE",
+      "status": "ACTIVE",
+      "description": "Chanda: Chandrakant",
+      "source": "WEB",
+      "metadata": {
+        "category": "General Chanda"
+      }
+    },
+    {
+      "id": "txn-chanda-11",
+      "sequenceNumber": 78,
+      "timestamp": "2026-09-02T12:00:00.000Z",
+      "type": "CHANDA",
+      "amount": 50,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Chanda: Dost",
+      "source": "WEB",
+      "metadata": {
+        "category": "General Chanda"
+      }
+    },
+    {
+      "id": "txn-chanda-12",
+      "sequenceNumber": 79,
+      "timestamp": "2026-09-02T12:00:00.000Z",
+      "type": "CHANDA",
+      "amount": 20,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Chanda: Chawl",
+      "source": "WEB",
+      "metadata": {
+        "category": "General Chanda"
+      }
+    },
+    {
+      "id": "txn-chanda-13",
+      "sequenceNumber": 80,
+      "timestamp": "2026-09-02T12:00:00.000Z",
+      "type": "CHANDA",
+      "amount": 50,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Chanda: Sumit Kirana",
+      "source": "WEB",
+      "metadata": {
+        "category": "General Chanda"
+      }
+    },
+    {
+      "id": "txn-chanda-14",
+      "sequenceNumber": 81,
+      "timestamp": "2026-09-02T12:00:00.000Z",
+      "type": "CHANDA",
+      "amount": 100,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Chanda: Shivcut-Chawl",
+      "source": "WEB",
+      "metadata": {
+        "category": "General Chanda"
+      }
+    },
+    {
+      "id": "txn-chanda-15",
+      "sequenceNumber": 82,
+      "timestamp": "2026-09-02T12:00:00.000Z",
+      "type": "CHANDA",
+      "amount": 250,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Chanda: Yadav",
+      "source": "WEB",
+      "metadata": {
+        "category": "General Chanda"
+      }
+    },
+    {
+      "id": "txn-chanda-16",
+      "sequenceNumber": 83,
+      "timestamp": "2026-09-02T12:00:00.000Z",
+      "type": "CHANDA",
+      "amount": 101,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Chanda: Kesarvani",
+      "source": "WEB",
+      "metadata": {
+        "category": "General Chanda"
+      }
+    },
+    {
+      "id": "txn-exp-1",
+      "sequenceNumber": 84,
+      "timestamp": "2026-09-08T20:06:34.000Z",
+      "type": "EXPENSE",
+      "amount": 20,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Female Plug",
+      "source": "WEB",
+      "metadata": {
+        "category": "Expense"
+      }
+    },
+    {
+      "id": "txn-exp-2",
+      "sequenceNumber": 85,
+      "timestamp": "2026-09-07T22:16:11.000Z",
+      "type": "EXPENSE",
+      "amount": 10,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Glitter",
+      "source": "WEB",
+      "metadata": {
+        "category": "Expense"
+      }
+    },
+    {
+      "id": "txn-exp-3",
+      "sequenceNumber": 86,
+      "timestamp": "2026-09-03T22:27:53.000Z",
+      "type": "EXPENSE",
+      "amount": 10,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Thread",
+      "source": "WEB",
+      "metadata": {
+        "category": "Expense"
+      }
+    },
+    {
+      "id": "txn-exp-4",
+      "sequenceNumber": 87,
+      "timestamp": "2026-09-02T19:16:14.000Z",
+      "type": "EXPENSE",
+      "amount": 100,
+      "mode": "ONLINE",
+      "status": "ACTIVE",
+      "description": "Black Kapda",
+      "source": "WEB",
+      "metadata": {
+        "category": "Expense"
+      }
+    },
+    {
+      "id": "txn-exp-5",
+      "sequenceNumber": 88,
+      "timestamp": "2026-09-01T22:41:29.000Z",
+      "type": "EXPENSE",
+      "amount": 40,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Stapler Pin",
+      "source": "WEB",
+      "metadata": {
+        "category": "Expense"
+      }
+    },
+    {
+      "id": "txn-exp-6",
+      "sequenceNumber": 89,
+      "timestamp": "2026-08-31T22:52:34.000Z",
+      "type": "EXPENSE",
+      "amount": 191,
+      "mode": "ONLINE",
+      "status": "ACTIVE",
+      "description": "Strip Light",
+      "source": "WEB",
+      "metadata": {
+        "category": "Expense"
+      }
+    },
+    {
+      "id": "txn-exp-7",
+      "sequenceNumber": 90,
+      "timestamp": "2026-08-31T20:54:21.000Z",
+      "type": "EXPENSE",
+      "amount": 240,
+      "mode": "ONLINE",
+      "status": "ACTIVE",
+      "description": "Rope Light",
+      "source": "WEB",
+      "metadata": {
+        "category": "Expense"
+      }
+    },
+    {
+      "id": "txn-exp-8",
+      "sequenceNumber": 91,
+      "timestamp": "2026-08-25T14:22:44.000Z",
+      "type": "EXPENSE",
+      "amount": 12,
+      "mode": "ONLINE",
+      "status": "ACTIVE",
+      "description": "Wire",
+      "source": "WEB",
+      "metadata": {
+        "category": "Expense"
+      }
+    },
+    {
+      "id": "txn-exp-9",
+      "sequenceNumber": 92,
+      "timestamp": "2026-08-25T10:16:53.000Z",
+      "type": "EXPENSE",
+      "amount": 100,
+      "mode": "ONLINE",
+      "status": "ACTIVE",
+      "description": "Connector",
+      "source": "WEB",
+      "metadata": {
+        "category": "Expense"
+      }
+    },
+    {
+      "id": "txn-exp-10",
+      "sequenceNumber": 93,
+      "timestamp": "2026-08-20T20:27:24.000Z",
+      "type": "EXPENSE",
+      "amount": 10,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Fuse",
+      "source": "WEB",
+      "metadata": {
+        "category": "Expense"
+      }
+    },
+    {
+      "id": "txn-exp-11",
+      "sequenceNumber": 94,
+      "timestamp": "2026-08-18T18:20:52.000Z",
+      "type": "EXPENSE",
+      "amount": 20,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Gum",
+      "source": "WEB",
+      "metadata": {
+        "category": "Expense"
+      }
+    },
+    {
+      "id": "txn-exp-12",
+      "sequenceNumber": 95,
+      "timestamp": "2026-08-18T13:01:24.000Z",
+      "type": "EXPENSE",
+      "amount": 30,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Paint",
+      "source": "WEB",
+      "metadata": {
+        "category": "Expense"
+      }
+    },
+    {
+      "id": "txn-exp-13",
+      "sequenceNumber": 96,
+      "timestamp": "2026-08-16T22:55:05.000Z",
+      "type": "EXPENSE",
+      "amount": 50,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Tape",
+      "source": "WEB",
+      "metadata": {
+        "category": "Expense"
+      }
+    },
+    {
+      "id": "txn-exp-14",
+      "sequenceNumber": 97,
+      "timestamp": "2026-08-16T17:05:25.000Z",
+      "type": "EXPENSE",
+      "amount": 270,
+      "mode": "ONLINE",
+      "status": "ACTIVE",
+      "description": "Ply",
+      "source": "WEB",
+      "metadata": {
+        "category": "Expense"
+      }
+    },
+    {
+      "id": "txn-exp-15",
+      "sequenceNumber": 98,
+      "timestamp": "2026-08-15T22:33:10.000Z",
+      "type": "EXPENSE",
+      "amount": 300,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Cotton",
+      "source": "WEB",
+      "metadata": {
+        "category": "Expense"
+      }
+    },
+    {
+      "id": "txn-exp-16",
+      "sequenceNumber": 99,
+      "timestamp": "2026-08-14T14:39:56.000Z",
+      "type": "EXPENSE",
+      "amount": 187,
+      "mode": "ONLINE",
+      "status": "ACTIVE",
+      "description": "Light",
+      "source": "WEB",
+      "metadata": {
+        "category": "Expense"
+      }
+    },
+    {
+      "id": "txn-exp-17",
+      "sequenceNumber": 100,
+      "timestamp": "2026-07-13T10:13:59.000Z",
+      "type": "EXPENSE",
+      "amount": 10,
+      "mode": "OFFLINE",
+      "status": "ACTIVE",
+      "description": "Tape",
+      "source": "WEB",
+      "metadata": {
+        "category": "Expense"
+      }
+    }
+  ]
+}

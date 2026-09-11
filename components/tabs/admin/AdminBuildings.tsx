@@ -88,7 +88,7 @@ export const AdminBuildings: React.FC<AdminBuildingsProps> = ({
     residentName: string;
     isPaid: boolean;
     amountPaid: number;
-    paymentMode: 'ONLINE' | 'OFFLINE';
+    paymentMode: 'ONLINE' | 'OFFLINE' | 'SPLIT';
   } | null>(null);
 
   // Delete Flat Confirmation Modal
@@ -565,9 +565,9 @@ export const AdminBuildings: React.FC<AdminBuildingsProps> = ({
                                 </span>
                                 {flat.paymentMode && (
                                   <span className={`text-[9px] font-medium px-1 py-0.5 rounded ${
-                                    flat.paymentMode === 'ONLINE' ? 'bg-blue-50 text-blue-700' : 'bg-emerald-50 text-emerald-700'
+                                    flat.paymentMode === 'ONLINE' ? 'bg-blue-50 text-blue-700' : flat.paymentMode === 'SPLIT' ? 'bg-purple-50 text-purple-700' : 'bg-emerald-50 text-emerald-700'
                                   }`}>
-                                    {flat.paymentMode === 'ONLINE' ? 'UPI' : 'Cash'}
+                                    {flat.paymentMode === 'ONLINE' ? 'UPI' : flat.paymentMode === 'SPLIT' ? 'Split' : 'Cash'}
                                   </span>
                                 )}
                               </div>
@@ -875,11 +875,11 @@ export const AdminBuildings: React.FC<AdminBuildingsProps> = ({
 
                   <div>
                     <label className="block font-medium text-slate-600 mb-1">Payment Mode</label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-1.5">
                       <button
                         type="button"
                         onClick={() => setEditingFlat({ ...editingFlat, paymentMode: 'ONLINE' })}
-                        className={`py-1.5 rounded-xl font-medium transition cursor-pointer ${
+                        className={`py-1.5 rounded-xl font-medium transition cursor-pointer text-xs ${
                           editingFlat.paymentMode === 'ONLINE'
                             ? 'bg-blue-600 text-white shadow-2xs'
                             : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -890,13 +890,24 @@ export const AdminBuildings: React.FC<AdminBuildingsProps> = ({
                       <button
                         type="button"
                         onClick={() => setEditingFlat({ ...editingFlat, paymentMode: 'OFFLINE' })}
-                        className={`py-1.5 rounded-xl font-medium transition cursor-pointer ${
+                        className={`py-1.5 rounded-xl font-medium transition cursor-pointer text-xs ${
                           editingFlat.paymentMode === 'OFFLINE'
                             ? 'bg-slate-800 text-white shadow-2xs'
                             : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }`}
                       >
                         Cash
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingFlat({ ...editingFlat, paymentMode: 'SPLIT' })}
+                        className={`py-1.5 rounded-xl font-medium transition cursor-pointer text-xs ${
+                          editingFlat.paymentMode === 'SPLIT'
+                            ? 'bg-purple-600 text-white shadow-2xs'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        Split
                       </button>
                     </div>
                   </div>

@@ -245,9 +245,11 @@ export const BuildingsTab: React.FC<BuildingsTabProps> = ({
                             <span className={`text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
                               flat.paymentMode === 'ONLINE'
                                 ? 'bg-blue-50 text-blue-700 border border-blue-200/60'
+                                : flat.paymentMode === 'SPLIT'
+                                ? 'bg-purple-50 text-purple-700 border border-purple-200/60'
                                 : 'bg-emerald-100/80 text-emerald-800 border border-emerald-200/60'
                             }`}>
-                              {flat.paymentMode === 'ONLINE' ? 'UPI' : 'Cash'}
+                              {flat.paymentMode === 'ONLINE' ? 'UPI' : flat.paymentMode === 'SPLIT' ? 'Split' : 'Cash'}
                             </span>
                           </div>
 

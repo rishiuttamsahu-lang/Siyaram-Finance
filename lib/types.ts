@@ -32,7 +32,9 @@ export interface Flat {
   residentName: string;
   amountPaid: number;
   isPaid: boolean;
-  paymentMode?: PaymentMode;
+  paymentMode?: PaymentMode | 'SPLIT';
+  onlinePaid?: number;
+  offlinePaid?: number;
   updatedAt?: string;
 }
 
