@@ -237,7 +237,7 @@ export class FirestoreClient {
    * Generates the next monotonically increasing transaction sequence number.
    */
   async getNextSequenceNumber(): Promise<number> {
-    const txns = await this.getTransactions(10);
+    const txns = await this.getTransactions(300);
     if (txns.length === 0) return 1;
     let maxSeq = 0;
     for (const t of txns) {
