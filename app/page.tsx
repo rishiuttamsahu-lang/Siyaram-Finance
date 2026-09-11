@@ -443,15 +443,75 @@ export default function Home() {
     }
   };
 
-  // Reversal Protocol (<id> undo) - Agent-rules.md §1 & Architecture §6
+  // Reversal Protocol (<id> undo) - Cascades to Member/Building state & Firestore
   const handleUndoTransaction = (txn: Transaction) => {
+    if (txn.status === 'REVERSED') {
+      alert(`Transaction #${txn.sequenceNumber} is already reversed.`);
+      return;
+    }
+
     if (confirm(`Are you sure you want to reverse Transaction #${txn.sequenceNumber} (${txn.description})? This will flip status to REVERSED without deleting history.`)) {
       // 1. Flip status in-place
       setTransactions(prev =>
         prev.map(t => (t.id === txn.id ? { ...t, status: 'REVERSED' as const } : t))
       );
 
-      // 2. Append immutable Audit Log
+      // 2. Cascade rollback to Member if applicable
+      if (txn.type === 'MEMBER') {
+        const targetMember = members.find(m => 
+          (txn.metadata?.memberId && m.id === txn.metadata.memberId) || 
+          m.name.toLowerCase() === (txn.metadata?.memberName || txn.description.replace(/^Member:\s*/i, '')).toLowerCase()
+        );
+        if (targetMember) {
+          let remainingToDeduct = txn.amount;
+          const newPayments = { ...(targetMember.payments || {}) };
+          const sortedMonths = Object.keys(newPayments).sort().reverse();
+          for (const m of sortedMonths) {
+            if (remainingToDeduct <= 0) break;
+            const cur = newPayments[m] || 0;
+            const dec = Math.min(cur, remainingToDeduct);
+            newPayments[m] = cur - dec;
+            remainingToDeduct -= dec;
+          }
+          const updatedMember: Member = {
+            ...targetMember,
+            previousYearPending: (targetMember.previousYearPending || 0) + remainingToDeduct,
+            payments: newPayments,
+          };
+          setMembers(prev => prev.map(m => m.id === targetMember.id ? updatedMember : m));
+          saveMemberToFirestore(updatedMember).catch(e => console.warn('Firestore undo member rollback notice:', e));
+        }
+      }
+
+      // 3. Cascade rollback to Building/Flat if applicable
+      else if (txn.type === 'BUILDING' && txn.metadata?.buildingCode && txn.metadata?.flatNo) {
+        const bCode = txn.metadata.buildingCode.toUpperCase();
+        const fNo = txn.metadata.flatNo;
+        const targetBuilding = buildings.find(b => b.code.toUpperCase() === bCode);
+        if (targetBuilding) {
+          const updatedBuilding: Building = {
+            ...targetBuilding,
+            floors: (targetBuilding.floors || []).map(flr => ({
+              ...flr,
+              flats: (flr.flats || []).map(fl => {
+                if (fl.flatNo === fNo) {
+                  const newAmt = Math.max(0, (fl.amountPaid || 0) - txn.amount);
+                  return {
+                    ...fl,
+                    amountPaid: newAmt,
+                    isPaid: newAmt > 0,
+                  };
+                }
+                return fl;
+              }),
+            })),
+          };
+          setBuildings(prev => prev.map(b => b.id === targetBuilding.id ? updatedBuilding : b));
+          saveBuildingToFirestore(updatedBuilding).catch(e => console.warn('Firestore undo building rollback notice:', e));
+        }
+      }
+
+      // 4. Append immutable Audit Log
       const reversalLog = createReversalAuditLog(txn, isAdmin ? 'Admin:Web' : 'TelegramBot');
       setAuditLogs(prev => [reversalLog, ...prev]);
 
