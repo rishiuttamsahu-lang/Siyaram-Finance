@@ -36,12 +36,10 @@ export function subscribeToActiveSeason(
       if (!snapshot.empty) {
         let active: Season | null = null;
         snapshot.forEach((d) => {
-          const s = d.data() as Season;
+          const s = { ...d.data(), id: d.id } as Season;
           if (s.isActive || !active) active = s;
         });
-        onData(active);
-      } else {
-        onData(null);
+        if (active) onData(active);
       }
     }, (error) => {
       console.warn('Firestore active season listener notice:', error.message);
@@ -66,7 +64,7 @@ export function subscribeToSeason(
     const seasonRef = doc(db, COLLECTIONS.SEASONS, seasonId);
     return onSnapshot(seasonRef, (snapshot) => {
       if (snapshot.exists()) {
-        onData(snapshot.data() as Season);
+        onData({ ...snapshot.data(), id: snapshot.id } as Season);
       } else {
         onData(null);
       }
@@ -93,7 +91,7 @@ export function subscribeToMembers(
     return onSnapshot(membersRef, (snapshot) => {
       const list: Member[] = [];
       if (!snapshot.empty) {
-        snapshot.forEach((d) => list.push(d.data() as Member));
+        snapshot.forEach((d) => list.push({ ...d.data(), id: d.id } as Member));
       }
       onData(list);
     }, (error) => {
@@ -119,7 +117,7 @@ export function subscribeToBuildings(
     return onSnapshot(buildingsRef, (snapshot) => {
       const list: Building[] = [];
       if (!snapshot.empty) {
-        snapshot.forEach((d) => list.push(d.data() as Building));
+        snapshot.forEach((d) => list.push({ ...d.data(), id: d.id } as Building));
       }
       onData(list);
     }, (error) => {
@@ -133,7 +131,7 @@ export function subscribeToBuildings(
 }
 
 /**
- * Subscribe to Transactions in real-time, ordered by sequenceNumber desc.
+ * Subscribe to Transactions in real-time, ordered by recent date/time first.
  */
 export function subscribeToTransactions(
   onData: (txns: Transaction[]) => void,
@@ -142,10 +140,19 @@ export function subscribeToTransactions(
   if (!db) return null;
   try {
     const txnsRef = collection(db, COLLECTIONS.TRANSACTIONS);
-    const q = query(txnsRef, orderBy('sequenceNumber', 'desc'));
-    return onSnapshot(q, (snapshot) => {
+    return onSnapshot(txnsRef, (snapshot) => {
       const list: Transaction[] = [];
-      snapshot.forEach((d) => list.push(d.data() as Transaction));
+      snapshot.forEach((d) => list.push({ ...d.data(), id: d.id } as Transaction));
+      list.sort((a, b) => {
+        const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+        const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+        if (!isNaN(timeA) && !isNaN(timeB) && timeB !== timeA) {
+          return timeB - timeA;
+        }
+        const seqA = Number(a.sequenceNumber) || 0;
+        const seqB = Number(b.sequenceNumber) || 0;
+        return seqB - seqA;
+      });
       onData(list);
     }, (error) => {
       console.warn('Firestore Transactions snapshot listener notice:', error.message);

@@ -47,3 +47,9 @@ next-env.d.ts
 firebase-services.json
 *-service-account*.json
 service-account*.json
+project data.txt
+secrets_list.json
+settings.json
+
+# duplicate/local worker directory (managed in separate repo)
+Copy of cloudflare worker/

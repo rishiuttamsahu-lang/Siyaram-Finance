@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Building, Flat } from '../../lib/types';
 import { formatINR } from '../../lib/finance';
 import { CheckCircle2, Layers, Building2 } from 'lucide-react';
@@ -21,10 +21,12 @@ export const BuildingsTab: React.FC<BuildingsTabProps> = ({
 }) => {
   const [selectedBuildingId, setSelectedBuildingId] = useState<string>(buildings[0]?.id || '');
 
-  // If initial Firestore data is loading, return rich skeleton layout
-  if (isLoading) {
-    return <BuildingsSkeleton />;
-  }
+  // Keep selected building synced when buildings load from Firestore
+  useEffect(() => {
+    if (buildings.length > 0 && (!selectedBuildingId || !buildings.some(b => b.id === selectedBuildingId))) {
+      setSelectedBuildingId(buildings[0].id);
+    }
+  }, [buildings, selectedBuildingId]);
 
   // Calculate overall aggregates
   const aggregates = useMemo(() => {
@@ -71,6 +73,11 @@ export const BuildingsTab: React.FC<BuildingsTabProps> = ({
 
     return { total, paid, pending: total - paid, amount };
   }, [currentBuilding]);
+
+  // If initial Firestore data is loading, return rich skeleton layout (AFTER all hooks)
+  if (isLoading) {
+    return <BuildingsSkeleton />;
+  }
 
   return (
     <div className="space-y-3 sm:space-y-4 pb-24">

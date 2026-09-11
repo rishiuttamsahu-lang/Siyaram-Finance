@@ -61,7 +61,7 @@ export function getEffectiveMonthTarget(
 export function computeMemberDue(
   member: Member,
   season: Season,
-  trackUpToMonth: string = season.liveMonth
+  trackUpToMonth?: string
 ): MemberDueSummary {
   if (member.isHonorary) {
     return {
@@ -77,8 +77,14 @@ export function computeMemberDue(
     };
   }
 
-  // Active tracked months: only months up to and including trackUpToMonth
-  const trackedMonths = season.months.filter(m => m <= trackUpToMonth);
+  // Active tracked months: fallback gracefully if trackUpToMonth is empty or uninitialized
+  const targetMonth = (trackUpToMonth && trackUpToMonth.trim() !== '')
+    ? trackUpToMonth
+    : (season.liveMonth || (season.months && season.months.length > 0 ? season.months[season.months.length - 1] : ''));
+
+  const trackedMonths = targetMonth
+    ? season.months.filter(m => m <= targetMonth)
+    : season.months;
 
   let currentSeasonTarget = 0;
   let currentSeasonPaid = 0;

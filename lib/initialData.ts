@@ -1,18 +1,46 @@
 import { Season, Member, Building, Transaction, AuditLog } from './types';
 
-// Default completely empty uninitialized season (0 dummy data)
+// Default healthy season structure so UI components mount safely before Firestore snapshot
 export const initialSeason: Season = {
-  id: '',
-  name: '',
-  startDate: '',
-  endDate: '',
-  openingBalance: 0,
-  isActive: false,
-  liveMonth: '',
+  id: '2025-26',
+  name: 'Ganesh Utsav 2025–26',
+  startDate: '2025-09',
+  endDate: '2026-09',
+  openingBalance: 6500,
+  isActive: true,
+  liveMonth: '2026-09',
   defaultMonthlyQuota: 200,
-  months: [],
-  blockedMonths: [],
-  monthQuotas: {},
+  months: [
+    '2025-09',
+    '2025-10',
+    '2025-11',
+    '2025-12',
+    '2026-01',
+    '2026-02',
+    '2026-03',
+    '2026-04',
+    '2026-05',
+    '2026-06',
+    '2026-07',
+    '2026-08',
+    '2026-09',
+  ],
+  blockedMonths: ['2025-12', '2026-01', '2026-02', '2026-03', '2026-04', '2026-05'],
+  monthQuotas: {
+    '2025-09': 100,
+    '2025-10': 100,
+    '2025-11': 100,
+    '2025-12': 100,
+    '2026-01': 100,
+    '2026-02': 100,
+    '2026-03': 100,
+    '2026-04': 100,
+    '2026-05': 100,
+    '2026-06': 200,
+    '2026-07': 200,
+    '2026-08': 200,
+    '2026-09': 250,
+  },
 };
 
 // Default completely empty arrays (0 dummy data)

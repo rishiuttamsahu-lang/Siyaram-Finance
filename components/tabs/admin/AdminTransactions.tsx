@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Transaction, Season, Member, Building, PaymentMode, TransactionType } from '../../../lib/types';
 import { formatINR } from '../../../lib/finance';
 import {
@@ -59,6 +59,19 @@ export const AdminTransactions: React.FC<AdminTransactionsProps> = ({
   const [entryDescription, setEntryDescription] = useState('');
   const [selectedMemberId, setSelectedMemberId] = useState(members[0]?.id || '');
   const [selectedWingCode, setSelectedWingCode] = useState(buildings[0]?.code || 'A');
+
+  // Keep dropdown selections synced when Firestore data loads
+  useEffect(() => {
+    if (members.length > 0 && (!selectedMemberId || !members.some(m => m.id === selectedMemberId))) {
+      setSelectedMemberId(members[0].id);
+    }
+  }, [members, selectedMemberId]);
+
+  useEffect(() => {
+    if (buildings.length > 0 && (!selectedWingCode || !buildings.some(b => b.code === selectedWingCode))) {
+      setSelectedWingCode(buildings[0].code);
+    }
+  }, [buildings, selectedWingCode]);
   const [selectedFlatNo, setSelectedFlatNo] = useState('101');
 
   // Action Menu Sheet (Three Dots)

@@ -24,11 +24,6 @@ export const IncomeTab: React.FC<IncomeTabProps> = ({
   const [splitView, setSplitView] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // If initial Firestore data is loading, return rich skeleton layout
-  if (isLoading) {
-    return <TransactionsSkeleton type="income" />;
-  }
-
   // Filter only active income/chanda transactions
   const incomeTxns = useMemo(() => {
     return transactions.filter(t => (t.type === 'CHANDA' || t.type === 'MEMBER' || t.type === 'BUILDING') && t.status === 'ACTIVE');
@@ -61,12 +56,26 @@ export const IncomeTab: React.FC<IncomeTabProps> = ({
     };
   }, [incomeTxns]);
 
-  // Filtered by search
+  // Filtered by search & sorted chronologically (most recent to oldest by timestamp/date/time, then sequenceNumber)
   const filteredTxns = useMemo(() => {
     return incomeTxns
       .filter(t => t.description.toLowerCase().includes(searchQuery.toLowerCase()))
-      .sort((a, b) => b.sequenceNumber - a.sequenceNumber); // Latest first
+      .sort((a, b) => {
+        const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
+        const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
+        if (!isNaN(timeA) && !isNaN(timeB) && timeB !== timeA) {
+          return timeB - timeA;
+        }
+        const seqA = Number(a.sequenceNumber) || 0;
+        const seqB = Number(b.sequenceNumber) || 0;
+        return seqB - seqA;
+      });
   }, [incomeTxns, searchQuery]);
+
+  // If initial Firestore data is loading, return rich skeleton layout (AFTER all hooks)
+  if (isLoading) {
+    return <TransactionsSkeleton type="income" />;
+  }
 
   return (
     <div className="space-y-4 pb-24">

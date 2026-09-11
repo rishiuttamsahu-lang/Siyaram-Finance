@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Member, Season, PaymentMode } from '../../lib/types';
 import { formatINR, computeMemberDue, getEffectiveMonthTarget } from '../../lib/finance';
 import { MicroChart } from '../MicroChart';
@@ -33,24 +33,30 @@ export const MembersTab: React.FC<MembersTabProps> = ({
   isAdmin,
   isLoading = false,
 }) => {
-  const [trackMonth, setTrackMonth] = useState<string>(season.liveMonth);
+  const [trackMonth, setTrackMonth] = useState<string>(season.liveMonth || '');
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'due-desc' | 'name' | 'default'>('due-desc');
   const [viewMode, setViewMode] = useState<'cards' | 'grid'>('cards');
   const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null);
 
-  // If initial Firestore data is loading, return rich skeleton layout
-  if (isLoading) {
-    return <MembersSkeleton />;
-  }
+  // Sync trackMonth whenever season loads or changes
+  useEffect(() => {
+    if (season.liveMonth && (!trackMonth || !season.months.includes(trackMonth))) {
+      setTrackMonth(season.liveMonth);
+    }
+  }, [season.liveMonth, season.months, trackMonth]);
+
+  const activeTrackMonth = (trackMonth && season.months.includes(trackMonth))
+    ? trackMonth
+    : (season.liveMonth || (season.months && season.months.length > 0 ? season.months[season.months.length - 1] : ''));
 
   // Compute dues for all members up to the tracked month
   const memberDues = useMemo(() => {
     return members.map(m => ({
       member: m,
-      dueSummary: computeMemberDue(m, season, trackMonth),
+      dueSummary: computeMemberDue(m, season, activeTrackMonth),
     }));
-  }, [members, season, trackMonth]);
+  }, [members, season, activeTrackMonth]);
 
   // Aggregated figures
   const totals = useMemo(() => {
@@ -91,6 +97,11 @@ export const MembersTab: React.FC<MembersTabProps> = ({
 
   // Month options for the track selector
   const availableMonths = season.months;
+
+  // If initial Firestore data is loading, return rich skeleton layout (AFTER all hooks)
+  if (isLoading) {
+    return <MembersSkeleton />;
+  }
 
   return (
     <div className="space-y-4 pb-24">
@@ -332,9 +343,9 @@ export const MembersTab: React.FC<MembersTabProps> = ({
                     <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5 text-center">
                       {season.months.map((m) => {
                         const isBlocked = season.blockedMonths.includes(m);
-                        const isFuture = m > trackMonth;
+                        const isFuture = activeTrackMonth ? m > activeTrackMonth : false;
                         const target = getEffectiveMonthTarget(member, season, m);
-                        const paid = member.payments[m] || 0;
+                        const paid = member.payments?.[m] || 0;
                         const monthDue = Math.max(0, target - paid);
                         const monthName = formatMonthName(m);
 
