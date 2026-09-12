@@ -14,7 +14,7 @@ interface NumericKeypadModalProps {
   onConfirm: (amount: number, mode: PaymentMode, note?: string) => void;
   entityName?: string;
   categoryLabel?: string;
-  actionType?: 'MEMBER' | 'BUILDING' | 'CHANDA' | 'EXPENSE';
+  actionType?: 'MEMBER' | 'BUILDING' | 'BUILDING_TOPUP' | 'CHANDA' | 'EXPENSE';
   initialNote?: string;
 }
 

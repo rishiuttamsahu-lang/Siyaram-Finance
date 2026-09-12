@@ -21,7 +21,8 @@ import {
   calculateMandalTotals, 
   allocatePayment, 
   createReversalAuditLog,
-  computeMemberDue
+  computeMemberDue,
+  formatINR
 } from '../lib/finance';
 import { 
   auth, 
@@ -74,6 +75,10 @@ const AuthModal = dynamic(() => import('../components/AuthModal').then(mod => mo
 });
 
 const SnapshotDeployModal = dynamic(() => import('../components/SnapshotDeployModal').then(mod => mod.SnapshotDeployModal), {
+  ssr: false,
+});
+
+const PaidFlatActionModal = dynamic(() => import('../components/PaidFlatActionModal').then(mod => mod.PaidFlatActionModal), {
   ssr: false,
 });
 
@@ -201,7 +206,7 @@ export default function Home() {
     entityName?: string;
     categoryLabel?: string;
     defaultAmount?: number;
-    actionType: 'MEMBER' | 'BUILDING' | 'CHANDA' | 'EXPENSE';
+    actionType: 'MEMBER' | 'BUILDING' | 'BUILDING_TOPUP' | 'CHANDA' | 'EXPENSE';
     targetMember?: Member;
     targetBuilding?: Building;
     targetFlat?: Flat;
@@ -209,6 +214,17 @@ export default function Home() {
     isOpen: false,
     title: '',
     actionType: 'CHANDA',
+  });
+
+  // Paid Flat Smart Prompt Action Modal State (Logic 1)
+  const [paidFlatConfig, setPaidFlatConfig] = useState<{
+    isOpen: boolean;
+    building: Building | null;
+    flat: Flat | null;
+  }>({
+    isOpen: false,
+    building: null,
+    flat: null,
   });
 
   // Calculate live financial totals strictly from ACTIVE transactions
@@ -236,16 +252,42 @@ export default function Home() {
     });
   };
 
-  // Handlers for Building Flat Collection
+  // Handlers for Building Flat Collection (Logic 1: Smart Prompt on Paid Flats)
   const openFlatModal = (building: Building, flat: Flat) => {
+    if (flat.isPaid && flat.amountPaid > 0) {
+      // If flat is already paid, open the Smart Choice modal (Edit vs Top-up)
+      setPaidFlatConfig({
+        isOpen: true,
+        building,
+        flat,
+      });
+      return;
+    }
+
+    // Normal unpaid flat: open keypad directly
     setKeypadConfig({
       isOpen: true,
       title: `${building.name} • Flat ${flat.flatNo}`,
       subtitle: `Door-to-door resident collection (Wing code: ${building.code})`,
       entityName: `${building.name} - Flat ${flat.flatNo}`,
       categoryLabel: 'Building Collection',
-      defaultAmount: flat.isPaid ? flat.amountPaid : 200,
+      defaultAmount: 200,
       actionType: 'BUILDING',
+      targetBuilding: building,
+      targetFlat: flat,
+    });
+  };
+
+  // Triggered when user chooses "Aur Chanda Jama Karein (Add More)" in PaidFlatActionModal
+  const handleSelectAddMore = (building: Building, flat: Flat) => {
+    setKeypadConfig({
+      isOpen: true,
+      title: `Top-up: ${building.code} Flat ${flat.flatNo}`,
+      subtitle: `Already paid ${formatINR(flat.amountPaid)}. Enter additional amount.`,
+      entityName: `${building.name} - Flat ${flat.flatNo}`,
+      categoryLabel: 'Additional Chanda',
+      defaultAmount: 100,
+      actionType: 'BUILDING_TOPUP',
       targetBuilding: building,
       targetFlat: flat,
     });
@@ -425,6 +467,76 @@ export default function Home() {
       setAuditLogs(prev => [newAudit, ...prev]);
 
       // Cloud Firestore background synchronization
+      if (updatedBuildingToSave) {
+        saveBuildingToFirestore(updatedBuildingToSave).catch(e => console.warn('Firestore building notice:', e));
+      }
+      saveTransactionToFirestore(newTxn).catch(e => console.warn('Firestore txn notice:', e));
+      saveAuditLogToFirestore(newAudit).catch(e => console.warn('Firestore audit notice:', e));
+    } else if (keypadConfig.actionType === 'BUILDING_TOPUP' && keypadConfig.targetBuilding && keypadConfig.targetFlat) {
+      const bCode = keypadConfig.targetBuilding.code;
+      const fNo = keypadConfig.targetFlat.flatNo;
+      const prevAmount = keypadConfig.targetFlat.amountPaid || 0;
+      const prevMode = keypadConfig.targetFlat.paymentMode;
+      const newTotalAmount = prevAmount + amount;
+      const finalMode: PaymentMode | 'SPLIT' = prevMode && prevMode !== mode ? 'SPLIT' : mode;
+
+      let updatedBuildingToSave: Building | null = null;
+      setBuildings(prev =>
+        prev.map(b => {
+          if (b.id !== keypadConfig.targetBuilding?.id && b.code !== bCode) return b;
+          const updatedBuilding: Building = {
+            ...b,
+            floors: b.floors.map(f => ({
+              ...f,
+              flats: f.flats.map(fl => {
+                if (fl.flatNo !== fNo) return fl;
+                const updatedFl: Flat = {
+                  ...fl,
+                  isPaid: true,
+                  amountPaid: newTotalAmount,
+                  paymentMode: finalMode,
+                  residentName: note || fl.residentName || 'Resident',
+                  updatedAt: now,
+                };
+                return updatedFl;
+              }),
+            })),
+          };
+          updatedBuildingToSave = updatedBuilding;
+          return updatedBuilding;
+        })
+      );
+
+      const newTxn: Transaction = {
+        id: `txn-${Date.now()}`,
+        sequenceNumber: nextSeq,
+        timestamp: now,
+        type: 'BUILDING',
+        amount, // Incremental amount only!
+        mode,
+        status: 'ACTIVE',
+        description: `${bCode} Wing Flat ${fNo} (${note || keypadConfig.targetFlat.residentName || 'Resident'}) [Top-up]`,
+        source: isAdmin ? 'WEB' : 'TEL',
+        metadata: {
+          buildingCode: bCode,
+          flatNo: fNo,
+          category: 'Building Chanda Top-up',
+        },
+      };
+      setTransactions(prev => [newTxn, ...prev]);
+
+      const newAudit: AuditLog = {
+        id: `log-${Date.now()}`,
+        txnId: newTxn.id,
+        action: 'CREATE',
+        previousValue: { amountPaid: prevAmount },
+        newValue: { addedAmount: amount, newTotal: newTotalAmount, building: bCode, flat: fNo, mode },
+        performedBy: isAdmin ? 'Admin:Web' : 'TelegramBot',
+        timestamp: now,
+        notes: `Building Top-up: Added ₹${amount} to Flat ${bCode}-${fNo}, new total ₹${newTotalAmount}`,
+      };
+      setAuditLogs(prev => [newAudit, ...prev]);
+
       if (updatedBuildingToSave) {
         saveBuildingToFirestore(updatedBuildingToSave).catch(e => console.warn('Firestore building notice:', e));
       }
@@ -710,6 +822,168 @@ export default function Home() {
     setBuildings(prev => prev.filter(b => b.id !== buildingId));
     if (toDelete) {
       deleteBuildingFromFirestore(toDelete.code).catch(e => console.warn('Firestore delete building notice:', e));
+    }
+  };
+
+  // Logic 1: Handle Flat Correction (Galti Sudharein)
+  const handleSaveFlatCorrection = (
+    building: Building,
+    flat: Flat,
+    newAmount: number,
+    newResidentName: string,
+    newMode: PaymentMode
+  ) => {
+    const now = new Date().toISOString();
+    const bCode = building.code;
+    const fNo = flat.flatNo;
+    const oldAmount = flat.amountPaid;
+
+    // 1. Update Flat in Building State & Firestore
+    let updatedBuildingToSave: Building | null = null;
+    setBuildings(prev =>
+      prev.map(b => {
+        if (b.id !== building.id && b.code !== bCode) return b;
+        const updatedBuilding = {
+          ...b,
+          floors: b.floors.map(f => ({
+            ...f,
+            flats: f.flats.map(fl => {
+              if (fl.flatNo !== fNo) return fl;
+              return {
+                ...fl,
+                isPaid: true,
+                amountPaid: newAmount,
+                paymentMode: newMode,
+                residentName: newResidentName || fl.residentName || 'Resident',
+                updatedAt: now,
+              };
+            }),
+          })),
+        };
+        updatedBuildingToSave = updatedBuilding;
+        return updatedBuilding;
+      })
+    );
+    if (updatedBuildingToSave) {
+      saveBuildingToFirestore(updatedBuildingToSave).catch(e => console.warn('Firestore building correction notice:', e));
+    }
+
+    // 2. Find and update the latest active transaction for this flat
+    const matchingTxn = transactions.find(t => 
+      t.type === 'BUILDING' && 
+      t.status === 'ACTIVE' && 
+      ((t.metadata?.buildingCode === bCode && t.metadata?.flatNo === fNo) ||
+       t.description.startsWith(`${bCode} Wing Flat ${fNo}`))
+    );
+
+    if (matchingTxn) {
+      const updatedTxn: Transaction = {
+        ...matchingTxn,
+        amount: newAmount,
+        mode: newMode,
+        description: `${bCode} Wing Flat ${fNo} (${newResidentName || 'Resident'})`,
+      };
+      setTransactions(prev => prev.map(t => (t.id === matchingTxn.id ? updatedTxn : t)));
+      updateTransactionInFirestore(matchingTxn.id, {
+        amount: newAmount,
+        mode: newMode,
+        description: updatedTxn.description,
+      }).catch(e => console.warn('Firestore txn correction notice:', e));
+
+      const editAudit: AuditLog = {
+        id: `log-${Date.now()}`,
+        txnId: matchingTxn.id,
+        action: 'UPDATE',
+        previousValue: { amount: oldAmount, mode: matchingTxn.mode },
+        newValue: { amount: newAmount, mode: newMode, residentName: newResidentName },
+        performedBy: isAdmin ? 'Admin:Web' : 'WebUser',
+        timestamp: now,
+        notes: `Corrected Flat ${bCode}-${fNo}: ₹${oldAmount} → ₹${newAmount}`,
+      };
+      setAuditLogs(prev => [editAudit, ...prev]);
+      saveAuditLogToFirestore(editAudit).catch(e => console.warn('Firestore audit notice:', e));
+    } else {
+      const nextSeq = transactions.length > 0 ? Math.max(...transactions.map(t => t.sequenceNumber)) + 1 : 1;
+      const newTxn: Transaction = {
+        id: `txn-${Date.now()}`,
+        sequenceNumber: nextSeq,
+        timestamp: now,
+        type: 'BUILDING',
+        amount: newAmount,
+        mode: newMode,
+        status: 'ACTIVE',
+        description: `${bCode} Wing Flat ${fNo} (${newResidentName || 'Resident'})`,
+        source: 'WEB',
+        metadata: { buildingCode: bCode, flatNo: fNo },
+      };
+      setTransactions(prev => [newTxn, ...prev]);
+      saveTransactionToFirestore(newTxn).catch(e => console.warn('Firestore txn notice:', e));
+    }
+  };
+
+  // Logic 1: Handle Reset / Mark as Unpaid
+  const handleResetFlat = (building: Building, flat: Flat) => {
+    const now = new Date().toISOString();
+    const bCode = building.code;
+    const fNo = flat.flatNo;
+
+    // 1. Reset Flat in Building State & Firestore
+    let updatedBuildingToSave: Building | null = null;
+    setBuildings(prev =>
+      prev.map(b => {
+        if (b.id !== building.id && b.code !== bCode) return b;
+        const updatedBuilding = {
+          ...b,
+          floors: b.floors.map(f => ({
+            ...f,
+            flats: f.flats.map(fl => {
+              if (fl.flatNo !== fNo) return fl;
+              return {
+                ...fl,
+                isPaid: false,
+                amountPaid: 0,
+                paymentMode: undefined,
+                updatedAt: now,
+              };
+            }),
+          })),
+        };
+        updatedBuildingToSave = updatedBuilding;
+        return updatedBuilding;
+      })
+    );
+    if (updatedBuildingToSave) {
+      saveBuildingToFirestore(updatedBuildingToSave).catch(e => console.warn('Firestore building reset notice:', e));
+    }
+
+    // 2. Reverse matching active transaction
+    const matchingTxn = transactions.find(t => 
+      t.type === 'BUILDING' && 
+      t.status === 'ACTIVE' && 
+      ((t.metadata?.buildingCode === bCode && t.metadata?.flatNo === fNo) ||
+       t.description.startsWith(`${bCode} Wing Flat ${fNo}`))
+    );
+
+    if (matchingTxn) {
+      setTransactions(prev =>
+        prev.map(t => (t.id === matchingTxn.id ? { ...t, status: 'REVERSED' } : t))
+      );
+      updateTransactionInFirestore(matchingTxn.id, { status: 'REVERSED' }).catch(e =>
+        console.warn('Firestore txn reversal notice:', e)
+      );
+
+      const resetAudit: AuditLog = {
+        id: `log-${Date.now()}`,
+        txnId: matchingTxn.id,
+        action: 'UNDO',
+        previousValue: { ...matchingTxn },
+        newValue: { status: 'REVERSED' },
+        performedBy: isAdmin ? 'Admin:Web' : 'WebUser',
+        timestamp: now,
+        notes: `Reset Flat ${bCode}-${fNo}: Reversed ₹${matchingTxn.amount}`,
+      };
+      setAuditLogs(prev => [resetAudit, ...prev]);
+      saveAuditLogToFirestore(resetAudit).catch(e => console.warn('Firestore audit notice:', e));
     }
   };
 
@@ -1099,6 +1373,17 @@ export default function Home() {
         actionType={keypadConfig.actionType}
         initialNote={keypadConfig.targetFlat?.residentName || ''}
         onConfirm={handleKeypadConfirm}
+      />
+
+      {/* Logic 1: Paid Flat Smart Action Modal (Choice of Edit vs Top-up) */}
+      <PaidFlatActionModal
+        isOpen={paidFlatConfig.isOpen}
+        onClose={() => setPaidFlatConfig(prev => ({ ...prev, isOpen: false }))}
+        building={paidFlatConfig.building}
+        flat={paidFlatConfig.flat}
+        onSelectAddMore={handleSelectAddMore}
+        onSaveCorrection={handleSaveFlatCorrection}
+        onResetFlat={handleResetFlat}
       />
 
     </div>
