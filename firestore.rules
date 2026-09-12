@@ -41,6 +41,10 @@ service cloud.firestore {
     }
 
     // 5. System Audit Logs
+    match /auditLogs/{logId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
     match /audit_logs/{logId} {
       allow read: if true;
       allow write: if isAdmin();
