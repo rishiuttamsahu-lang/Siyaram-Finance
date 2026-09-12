@@ -13,3 +13,4 @@ ENVIRONMENT = "production"
 # 2. TELEGRAM_SECRET_TOKEN   (Optional: Webhook secret verification header)
 # 3. FIREBASE_SERVICE_ACCOUNT (Optional: Service Account JSON string for full Firestore admin write)
 # 4. AUTHORIZED_TELEGRAM_IDS (Optional: Comma-separated Telegram User IDs allowed to make entries)
+# 5. GEMINI_API_KEY          (Required for voice notes: Gemini Flash-Lite multimodal key)

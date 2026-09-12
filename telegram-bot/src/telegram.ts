@@ -69,7 +69,9 @@ export function getHelpMessage(): string {
 /6 — <b>Online Expenses</b> (UPI Kharcha)
 /7 — <b>Combined Income Ledger</b>
 /8 — <b>Combined Expense Ledger</b>
-/9 — <b>This Help Menu</b>
+🎙️ <b>Voice Notes:</b>
+Send any voice note in Hindi, Hinglish, Marathi, or English.
+<i>Examples:</i> <code>"Piyush 500 cash mila"</code> | <code>"Expense Flower 350"</code> | <code>"Summary dikhao"</code>
 
 <i>Note: Standalone <code>O</code> at the end marks an Online UPI payment.</i>`;
 }

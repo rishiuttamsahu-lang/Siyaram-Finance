@@ -104,12 +104,21 @@ export interface TelegramChat {
   username?: string;
 }
 
+export interface TelegramVoice {
+  file_id: string;
+  file_unique_id: string;
+  duration: number;
+  mime_type?: string;
+  file_size?: number;
+}
+
 export interface TelegramMessage {
   message_id: number;
   from?: TelegramUser;
   chat: TelegramChat;
   date: number;
   text?: string;
+  voice?: TelegramVoice;
 }
 
 export interface TelegramUpdate {
@@ -126,6 +135,7 @@ export interface Env {
   FIREBASE_SERVICE_ACCOUNT?: string;
   AUTHORIZED_TELEGRAM_IDS?: string;
   ENVIRONMENT?: string;
+  GEMINI_API_KEY?: string;
 }
 
 // Command Parse Result

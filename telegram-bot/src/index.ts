@@ -1,8 +1,13 @@
-import { Env, TelegramUpdate, Transaction, AuditLog, Member, Building } from './types.ts';
+import type { Env, TelegramUpdate, Transaction, AuditLog, Member, Building } from './types.ts';
 import { parseTelegramMessage } from './parser.ts';
 import { FirestoreClient } from './firestore.ts';
 import { allocateMemberPayment, computeMemberDues, formatINR } from './allocation.ts';
-import { sendTelegramMessage, getHelpMessage } from './telegram.ts';
+import { sendTelegramMessage as sendTelegramMessageRaw, getHelpMessage } from './telegram.ts';
+import {
+  downloadTelegramVoiceAudio,
+  arrayBufferToBase64,
+  processVoiceWithGemini,
+} from './geminiVoice.ts';
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -62,23 +67,28 @@ export default {
       }
 
       const msg = update.message;
-      if (!msg || !msg.text || !msg.chat) {
-        // Acknowledge non-text messages / updates immediately
+      if (!msg || (!msg.text && !msg.voice) || !msg.chat) {
+        // Acknowledge non-text / non-voice messages immediately
         return new Response('OK');
       }
 
       const chatId = msg.chat.id;
-      const rawText = msg.text.trim();
       const senderId = msg.from ? String(msg.from.id) : '';
       const senderName = msg.from
         ? `${msg.from.first_name || ''} ${msg.from.last_name || ''}`.trim() || msg.from.username || 'User'
         : 'User';
 
+      let voiceHeader = '';
+      const sendTelegramMessage = (token: string, cid: number, text: string, replyTo?: number) => {
+        const finalText = voiceHeader ? `${voiceHeader}${text}` : text;
+        return sendTelegramMessageRaw(token, cid, finalText, replyTo);
+      };
+
       // Verify Telegram Allowlist if configured in environment
       if (env.AUTHORIZED_TELEGRAM_IDS) {
         const allowed = env.AUTHORIZED_TELEGRAM_IDS.split(',').map((s) => s.trim());
         if (allowed.length > 0 && !allowed.includes(senderId)) {
-          await sendTelegramMessage(
+          await sendTelegramMessageRaw(
             env.TELEGRAM_BOT_TOKEN,
             chatId,
             `⛔ <b>Access Restricted:</b> Your Telegram ID (<code>${senderId}</code>) is not authorized to log ledger entries. Contact the Admin.`,
@@ -100,12 +110,62 @@ export default {
         ]);
 
         if (!season) {
-          await sendTelegramMessage(
+          await sendTelegramMessageRaw(
             env.TELEGRAM_BOT_TOKEN,
             chatId,
             `⚠️ <b>No Active Season Found:</b> Please initialize an active season in the Siyaram Admin Panel before recording entries.`,
             msg.message_id
           );
+          return new Response('OK');
+        }
+
+        let rawText = '';
+
+        // Handle Voice Note (Multimodal Gemini 3.1 Flash-Lite -> Gemini 3.5 Flash-Lite)
+        if (msg.voice) {
+          try {
+            const { buffer, mimeType } = await downloadTelegramVoiceAudio(
+              env.TELEGRAM_BOT_TOKEN,
+              msg.voice.file_id
+            );
+            const audioBase64 = arrayBufferToBase64(buffer);
+            const voiceResult = await processVoiceWithGemini(
+              env,
+              audioBase64,
+              msg.voice.mime_type || mimeType,
+              members,
+              buildings
+            );
+
+            if (!voiceResult.commandText) {
+              const heard = voiceResult.transcription
+                ? `🎙️ <i>"${voiceResult.transcription}"</i>\n\n`
+                : '';
+              await sendTelegramMessageRaw(
+                env.TELEGRAM_BOT_TOKEN,
+                chatId,
+                `${heard}❓ <b>Command Not Recognized:</b> Please speak a financial entry or query (e.g. <i>"Piyush 500 Cash"</i>, <i>"Expense Flower 350 Cash"</i>, or <i>"Summary dikhao"</i>).`,
+                msg.message_id
+              );
+              return new Response('OK');
+            }
+
+            rawText = voiceResult.commandText.trim();
+            voiceHeader = `🎙️ <i>"${voiceResult.transcription}"</i>\n↳ <code>${voiceResult.commandText}</code>\n\n`;
+          } catch (voiceErr: any) {
+            console.error('Error processing voice note with Gemini:', voiceErr);
+            await sendTelegramMessageRaw(
+              env.TELEGRAM_BOT_TOKEN,
+              chatId,
+              `⚠️ <b>Voice Processing Error:</b> Could not process audio note (${voiceErr.message || 'Unknown error'}). Please try again or type your command.`,
+              msg.message_id
+            );
+            return new Response('OK');
+          }
+        } else if (msg.text) {
+          // Regular text message - deterministic regex parser ONLY (zero Gemini usage)
+          rawText = msg.text.trim();
+        } else {
           return new Response('OK');
         }
 
@@ -295,7 +355,7 @@ ${lines.join('\n')}${duesList.length > 20 ? `\n<i>...and ${duesList.length - 20}
               status: 'ACTIVE',
               entityId: member.id,
               entityName: `${member.name} (Paused Member)`,
-              details: { note: 'Paused member contribution routed to General Chanda' },
+              details: { notes: 'Paused member contribution routed to General Chanda' },
               performedBy: `Telegram:${senderName} (${senderId})`,
             };
             await db.saveTransaction(newTxn);
@@ -304,11 +364,11 @@ ${lines.join('\n')}${duesList.length > 20 ? `\n<i>...and ${duesList.length - 20}
               id: `audit-${Date.now()}`,
               timestamp: new Date().toISOString(),
               action: 'CREATE',
-              txnId,
-              targetType: 'TRANSACTION',
+              targetEntity: 'TRANSACTION',
+              targetId: txnId,
               performedBy: `Telegram:${senderName} (${senderId})`,
-              newValue: newTxn,
-              notes: `Paused member ${member.name} contribution routed to Chanda`,
+              changes: [{ field: 'all', oldValue: null, newValue: newTxn }],
+              reason: `Paused member ${member.name} contribution routed to Chanda`,
             };
             await db.saveAuditLog(audit);
 
