@@ -26,7 +26,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
+    <html lang="en" className="min-h-full">
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -35,8 +35,11 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="h-full antialiased font-sans ios-mesh-bg text-slate-900 selection:bg-emerald-100 selection:text-emerald-900">
-        {children}
+      <body className="min-h-screen antialiased font-sans bg-[#f5f8f6] text-slate-900 selection:bg-emerald-100 selection:text-emerald-900 relative">
+        <div className="fixed inset-0 pointer-events-none z-0 ios-mesh-bg" aria-hidden="true" />
+        <div className="relative z-10 min-h-screen">
+          {children}
+        </div>
       </body>
     </html>
   );

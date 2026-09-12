@@ -68,11 +68,13 @@
 
 /* Ambient iOS Mesh Background */
 .ios-mesh-bg {
-  background: 
-    radial-gradient(at 10% 10%, rgba(167, 243, 208, 0.45) 0px, transparent 50%),
-    radial-gradient(at 90% 15%, rgba(199, 210, 254, 0.35) 0px, transparent 45%),
-    radial-gradient(at 50% 90%, rgba(254, 240, 138, 0.25) 0px, transparent 50%),
-    #f5f8f6;
+  background-color: #f5f8f6;
+  background-image: 
+    radial-gradient(at 10% 10%, rgba(167, 243, 208, 0.45) 0px, transparent 55%),
+    radial-gradient(at 90% 15%, rgba(199, 210, 254, 0.35) 0px, transparent 50%),
+    radial-gradient(at 50% 90%, rgba(254, 240, 138, 0.25) 0px, transparent 55%);
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
 }
 
 /* iOS Glass Card */
