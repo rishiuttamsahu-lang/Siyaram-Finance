@@ -115,7 +115,7 @@ export const AdminTransactions: React.FC<AdminTransactionsProps> = ({
 
   const filteredTransactions = transactions.filter((t) => {
     const matchesSearch =
-      t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (t.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       String(t.sequenceNumber).includes(searchQuery);
     if (!matchesSearch) return false;
 

@@ -59,7 +59,7 @@ export const IncomeTab: React.FC<IncomeTabProps> = ({
   // Filtered by search & sorted chronologically (most recent to oldest by timestamp/date/time, then sequenceNumber)
   const filteredTxns = useMemo(() => {
     return incomeTxns
-      .filter(t => t.description.toLowerCase().includes(searchQuery.toLowerCase()))
+      .filter(t => (t.description || '').toLowerCase().includes(searchQuery.toLowerCase()))
       .sort((a, b) => {
         const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
         const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
@@ -170,10 +170,10 @@ export const IncomeTab: React.FC<IncomeTabProps> = ({
                   <div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-[10px] font-mono font-bold text-slate-400">#{t.sequenceNumber}</span>
-                      <span className="text-xs font-bold text-slate-900">{t.description}</span>
+                      <span className="text-xs font-bold text-slate-900">{t.description || 'Chanda'}</span>
                     </div>
                     <span className="text-[9px] text-slate-400">
-                      {new Date(t.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {t.timestamp ? new Date(t.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent'}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -219,10 +219,10 @@ export const IncomeTab: React.FC<IncomeTabProps> = ({
                   <div>
                     <div className="flex items-center gap-1.5">
                       <span className="text-[10px] font-mono font-bold text-emerald-600">#{t.sequenceNumber}</span>
-                      <span className="text-xs font-bold text-slate-900">{t.description}</span>
+                      <span className="text-xs font-bold text-slate-900">{t.description || 'Chanda'}</span>
                     </div>
                     <span className="text-[9px] text-slate-400">
-                      {new Date(t.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {t.timestamp ? new Date(t.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent'}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -278,13 +278,13 @@ export const IncomeTab: React.FC<IncomeTabProps> = ({
 
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-bold text-slate-900">{t.description}</span>
+                        <span className="text-xs font-bold text-slate-900">{t.description || 'Chanda'}</span>
                         <span className="text-[10px] font-mono text-slate-400 font-semibold">
                           #{t.sequenceNumber}
                         </span>
                       </div>
                       <div className="text-[10px] text-slate-400 flex items-center gap-1.5">
-                        <span>{new Date(t.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' })}</span>
+                        <span>{t.timestamp ? new Date(t.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' }) : 'Recent'}</span>
                         <span>•</span>
                         <span className={t.mode === 'ONLINE' ? 'text-emerald-600 font-medium' : 'text-slate-500'}>
                           {t.mode === 'ONLINE' ? 'UPI' : 'Cash'}

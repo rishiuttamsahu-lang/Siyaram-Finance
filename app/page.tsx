@@ -134,6 +134,48 @@ export default function Home() {
   // Khajanchi personal bank balance for fund separation (PRD §5.7)
   const [bankBalance, setBankBalance] = useState<number>(60000);
 
+  // Support direct URL query / hash navigation (e.g. ?tab=expense or #expense)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const parseTab = (str: string): TabType | null => {
+      const lower = str.toLowerCase();
+      if (['expense', 'expenses', 'expence', 'expences', 'kharcha'].includes(lower)) return 'expense';
+      if (['income', 'incomes', 'chanda'].includes(lower)) return 'income';
+      if (['building', 'buildings', 'flats'].includes(lower)) return 'buildings';
+      if (['member', 'members'].includes(lower)) return 'members';
+      if (['admin', 'panel'].includes(lower)) return 'admin';
+      return null;
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab') || window.location.hash.replace('#', '');
+    if (tabParam) {
+      const match = parseTab(tabParam);
+      if (match) setActiveTab(match);
+    }
+
+    const handlePopState = () => {
+      const p = new URLSearchParams(window.location.search);
+      const t = p.get('tab') || window.location.hash.replace('#', '');
+      if (t) {
+        const m = parseTab(t);
+        if (m) setActiveTab(m);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Synchronize activeTab to URL so reloads stay on the current tab
+  const handleTabChange = (newTab: TabType) => {
+    setActiveTab(newTab);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', newTab);
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
+
   // Smooth scroll to top on tab switch
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -620,7 +662,7 @@ export default function Home() {
       if (txn.type === 'MEMBER') {
         const targetMember = members.find(m => 
           (txn.metadata?.memberId && m.id === txn.metadata.memberId) || 
-          m.name.toLowerCase() === (txn.metadata?.memberName || txn.description.replace(/^Member:\s*/i, '')).toLowerCase()
+          m.name.toLowerCase() === (txn.metadata?.memberName || (txn.description || '').replace(/^Member:\s*/i, '')).toLowerCase()
         );
         if (targetMember) {
           let remainingToDeduct = txn.amount;
@@ -873,7 +915,7 @@ export default function Home() {
       t.type === 'BUILDING' && 
       t.status === 'ACTIVE' && 
       ((t.metadata?.buildingCode === bCode && t.metadata?.flatNo === fNo) ||
-       t.description.startsWith(`${bCode} Wing Flat ${fNo}`))
+       (t.description || '').startsWith(`${bCode} Wing Flat ${fNo}`))
     );
 
     if (matchingTxn) {
@@ -961,7 +1003,7 @@ export default function Home() {
       t.type === 'BUILDING' && 
       t.status === 'ACTIVE' && 
       ((t.metadata?.buildingCode === bCode && t.metadata?.flatNo === fNo) ||
-       t.description.startsWith(`${bCode} Wing Flat ${fNo}`))
+       (t.description || '').startsWith(`${bCode} Wing Flat ${fNo}`))
     );
 
     if (matchingTxn) {
@@ -1324,7 +1366,7 @@ export default function Home() {
         {/* Floating iOS Bottom Navigation Dock */}
         <BottomNav
           activeTab={activeTab}
-          onChangeTab={setActiveTab}
+          onChangeTab={handleTabChange}
           pendingDuesCount={pendingDuesCount}
           isAdmin={isAdmin}
         />

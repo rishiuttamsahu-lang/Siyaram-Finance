@@ -169,7 +169,16 @@ export function subscribeToTransactions(
     const txnsRef = collection(db, COLLECTIONS.TRANSACTIONS);
     return onSnapshot(txnsRef, (snapshot) => {
       const list: Transaction[] = [];
-      snapshot.forEach((d) => list.push({ ...d.data(), id: d.id } as Transaction));
+      snapshot.forEach((d) => {
+        const raw = d.data() as any;
+        const desc = raw.description || raw.entityName || raw.details?.expensePurpose || raw.details?.notes || (raw.type === 'EXPENSE' ? 'Expense' : 'Transaction');
+        list.push({
+          ...raw,
+          id: d.id,
+          description: desc,
+          amount: Number(raw.amount) || 0,
+        } as Transaction);
+      });
       list.sort((a, b) => {
         const timeA = a.timestamp ? new Date(a.timestamp).getTime() : 0;
         const timeB = b.timestamp ? new Date(b.timestamp).getTime() : 0;
