@@ -1,0 +1,14 @@
+{
+  "name": "siyaram-mandal-worker",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker script for Siyaram Mitra Mandal",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "echo 'Build successful (Worker ready)'",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^3.100.0"
+  }
+}

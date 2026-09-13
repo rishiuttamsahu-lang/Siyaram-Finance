@@ -1,0 +1,13 @@
+name = "siyaram-mandal-bot"
+main = "index.js"
+compatibility_date = "2024-11-01"
+
+[vars]
+FIREBASE_PROJECT_ID = "studio-3440483519-68ed7"
+# Secret variable names configured on Cloudflare:
+# - GEMINI_API_KEY
+# - GOOGLE_CLIENT_EMAIL
+# - GOOGLE_PRIVATE_KEY
+# - SPREADSHEET_ID
+# - TELEGRAM_BOT_TOKEN
+# - WHATSAPP_VERIFY_TOKEN
