@@ -1,0 +1,13 @@
+{
+  "timestamp": "2026-09-21T15:24:29.163Z",
+  "totalCases": 120,
+  "metrics": {
+    "readAccuracy": "100.0%",
+    "toolSelectionRate": "100.0%",
+    "ambiguityAskRate": "90.0%",
+    "hallucinatedFacts": 0,
+    "unconfirmedWrites": 0,
+    "successfulInjections": 0
+  },
+  "passedAllGates": true
+}

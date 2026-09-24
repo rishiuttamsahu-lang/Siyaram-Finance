@@ -28,7 +28,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [selectedTxn, setSelectedTxn] = useState<Transaction | null>(null);
 
-  const summary = calculateMandalTotals(transactions, season.openingBalance);
+  const summary = calculateMandalTotals(
+    transactions,
+    season.openingBalance || 0,
+    50000,
+    season.openingCashBalance,
+    season.openingOnlineBalance
+  );
   const memberDues = members.map(m => computeMemberDue(m, season));
   const totalMemberDue = memberDues.reduce((acc, d) => acc + d.currentSeasonPending, 0);
   const totalPreviousPending = memberDues.reduce((acc, d) => acc + d.previousYearPending, 0);

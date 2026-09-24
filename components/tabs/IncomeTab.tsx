@@ -24,9 +24,9 @@ export const IncomeTab: React.FC<IncomeTabProps> = ({
   const [splitView, setSplitView] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Filter only active income/chanda transactions
+  // Filter only active general chanda transactions (isolated from member dues and building collections)
   const incomeTxns = useMemo(() => {
-    return transactions.filter(t => (t.type === 'CHANDA' || t.type === 'MEMBER' || t.type === 'BUILDING') && t.status === 'ACTIVE');
+    return transactions.filter(t => t.type === 'CHANDA' && t.status === 'ACTIVE');
   }, [transactions]);
 
   // Aggregates

@@ -99,12 +99,14 @@ import {
   saveSeasonToFirestore,
   deleteSeasonFromFirestore,
   saveAuditLogToFirestore,
+  deployNewSeasonToFirestore,
 } from '../lib/firestoreService';
 
 export default function Home() {
   // Application Data States (Hydrated with authentic data)
   const [season, setSeason] = useState<Season>(initialSeason);
   const [allSeasons, setAllSeasons] = useState<Season[]>([]);
+  const [selectedSeasonId, setSelectedSeasonId] = useState<string>('2025-26');
   const [members, setMembers] = useState<Member[]>(initialMembers);
   const [buildings, setBuildings] = useState<Building[]>(initialBuildings);
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
@@ -201,44 +203,72 @@ export default function Home() {
     return () => unsubAuth();
   }, [activeTab]);
 
-  // Real-time Firestore synchronization with hydration tracking
+  // Real-time Firestore synchronization for season metadata
   useEffect(() => {
     const unsubSeason = subscribeToActiveSeason((cloudSeason) => {
       if (cloudSeason) {
         setSeason(cloudSeason);
+        setSelectedSeasonId(prev => (prev === '2025-26' && cloudSeason.id !== '2025-26') ? cloudSeason.id : prev);
       } else {
         setSeason(initialSeason);
       }
       setLoadedStatus(prev => ({ ...prev, season: true }));
     });
     const unsubAllSeasons = subscribeToAllSeasons((cloudSeasons) => {
-      setAllSeasons(cloudSeasons || []);
-    });
-    const unsubMembers = subscribeToMembers((cloudMembers) => {
-      setMembers(cloudMembers || []);
-      setLoadedStatus(prev => ({ ...prev, members: true }));
-    });
-    const unsubBuildings = subscribeToBuildings((cloudBuildings) => {
-      setBuildings(cloudBuildings || []);
-      setLoadedStatus(prev => ({ ...prev, buildings: true }));
-    });
-    const unsubTxns = subscribeToTransactions((cloudTxns) => {
-      setTransactions(cloudTxns || []);
-      setLoadedStatus(prev => ({ ...prev, transactions: true }));
-    });
-    const unsubLogs = subscribeToAuditLogs((cloudLogs) => {
-      setAuditLogs(cloudLogs || []);
+      if (cloudSeasons && cloudSeasons.length > 0) {
+        const unique = Array.from(new Map(cloudSeasons.map(s => [s.id, s])).values());
+        setAllSeasons(unique);
+        const activeS = unique.find(s => s.isActive);
+        if (activeS) {
+          setSeason(activeS);
+        }
+      }
     });
 
     return () => {
       unsubSeason?.();
       unsubAllSeasons?.();
+    };
+  }, []);
+
+  // Real-time Firestore synchronization scoped to selectedSeasonId
+  useEffect(() => {
+    if (!selectedSeasonId) return;
+    setLoadedStatus(prev => ({ ...prev, members: false, buildings: false, transactions: false }));
+
+    const unsubMembers = subscribeToMembers(selectedSeasonId, (cloudMembers) => {
+      setMembers(cloudMembers || []);
+      setLoadedStatus(prev => ({ ...prev, members: true }));
+    });
+    const unsubBuildings = subscribeToBuildings(selectedSeasonId, (cloudBuildings) => {
+      setBuildings(cloudBuildings || []);
+      setLoadedStatus(prev => ({ ...prev, buildings: true }));
+    });
+    const unsubTxns = subscribeToTransactions(selectedSeasonId, (cloudTxns) => {
+      setTransactions(cloudTxns || []);
+      setLoadedStatus(prev => ({ ...prev, transactions: true }));
+    });
+    const unsubLogs = subscribeToAuditLogs(selectedSeasonId, (cloudLogs) => {
+      setAuditLogs(cloudLogs || []);
+    });
+
+    return () => {
       unsubMembers?.();
       unsubBuildings?.();
       unsubTxns?.();
       unsubLogs?.();
     };
-  }, []);
+  }, [selectedSeasonId]);
+
+  // Derived current viewing season and read-only status
+  const currentViewSeason = useMemo(() => {
+    const found = allSeasons.find(s => s.id === selectedSeasonId);
+    if (found) return found;
+    if (season.id === selectedSeasonId) return season;
+    return { ...season, id: selectedSeasonId };
+  }, [allSeasons, selectedSeasonId, season]);
+
+  const isReadOnlyMode = !currentViewSeason.isActive;
 
   // Keypad Modal State
   const [keypadConfig, setKeypadConfig] = useState<{
@@ -271,21 +301,31 @@ export default function Home() {
 
   // Calculate live financial totals strictly from ACTIVE transactions
   const summary = useMemo(() => {
-    return calculateMandalTotals(transactions, season.openingBalance, bankBalance);
-  }, [transactions, season.openingBalance, bankBalance]);
+    return calculateMandalTotals(
+      transactions, 
+      currentViewSeason.openingBalance || 0, 
+      bankBalance,
+      currentViewSeason.openingCashBalance,
+      currentViewSeason.openingOnlineBalance
+    );
+  }, [transactions, currentViewSeason, bankBalance]);
 
   // Count pending member dues for bottom nav badge
   const pendingDuesCount = useMemo(() => {
-    return members.filter(m => !m.isHonorary && (m.previousYearPending > 0 || (m.payments[season.liveMonth] || 0) < 100)).length;
-  }, [members, season.liveMonth]);
+    return members.filter(m => !m.isHonorary && (m.previousYearPending > 0 || (m.payments[currentViewSeason.liveMonth] || 0) < 100)).length;
+  }, [members, currentViewSeason.liveMonth]);
 
   // Handlers for Member Payment
   const openMemberPaymentModal = (member: Member) => {
-    const due = (member.previousYearPending || 0) + (member.monthlyOverrides?.[season.liveMonth] || season.defaultMonthlyQuota);
+    if (isReadOnlyMode) {
+      alert(`Viewing ${currentViewSeason.name || currentViewSeason.id} (Archived). To record a transaction, please switch to the Active Season in the header.`);
+      return;
+    }
+    const due = (member.previousYearPending || 0) + (member.monthlyOverrides?.[currentViewSeason.liveMonth] || currentViewSeason.defaultMonthlyQuota);
     setKeypadConfig({
       isOpen: true,
       title: `Contribution: ${member.name}`,
-      subtitle: `Waterfall: Prev Debt → ${season.liveMonth} Due → Carry Forward`,
+      subtitle: `Waterfall: Prev Debt → ${currentViewSeason.liveMonth} Due → Carry Forward`,
       entityName: member.name,
       categoryLabel: 'Member Contribution',
       defaultAmount: due > 0 ? due : 100,
@@ -337,6 +377,10 @@ export default function Home() {
 
   // Handlers for Extra Chanda
   const openAddIncomeModal = () => {
+    if (isReadOnlyMode) {
+      alert(`Viewing ${currentViewSeason.name || currentViewSeason.id} (Archived). To record Chanda, please switch to the Active Season in the header.`);
+      return;
+    }
     setKeypadConfig({
       isOpen: true,
       title: 'Add Chanda',
@@ -349,6 +393,10 @@ export default function Home() {
 
   // Handlers for Expense
   const openAddExpenseModal = () => {
+    if (isReadOnlyMode) {
+      alert(`Viewing ${currentViewSeason.name || currentViewSeason.id} (Archived). To record an expense, please switch to the Active Season in the header.`);
+      return;
+    }
     setKeypadConfig({
       isOpen: true,
       title: 'Log Expense',
@@ -361,6 +409,12 @@ export default function Home() {
 
   // Execute payment / collection confirmed via iOS Keypad
   const handleKeypadConfirm = (amount: number, mode: PaymentMode, note?: string) => {
+    if (isReadOnlyMode) {
+      alert(`Cannot make changes to ${currentViewSeason.name || currentViewSeason.id} because it is Archived. Please switch to the Active Season in the header.`);
+      setKeypadConfig(prev => ({ ...prev, isOpen: false }));
+      return;
+    }
+
     const now = new Date().toISOString();
     const nextSeq = Math.max(...transactions.map(t => t.sequenceNumber), 0) + 1;
 
@@ -371,6 +425,7 @@ export default function Home() {
         const newTxn: Transaction = {
           id: `txn-${Date.now()}`,
           sequenceNumber: nextSeq,
+          seasonId: selectedSeasonId,
           timestamp: now,
           type: 'CHANDA',
           amount,
@@ -382,6 +437,7 @@ export default function Home() {
             donorName: `${memberName} (Paused Member)`,
             note: note || 'Paused member contribution routed to General Chanda',
             memberId: keypadConfig.targetMember.id,
+            seasonId: selectedSeasonId,
           },
         };
         setTransactions(prev => [newTxn, ...prev]);
@@ -389,6 +445,7 @@ export default function Home() {
         const newAudit: AuditLog = {
           id: `log-${Date.now()}`,
           txnId: newTxn.id,
+          seasonId: selectedSeasonId,
           action: 'CREATE',
           previousValue: null,
           newValue: { amount, mode, member: memberName, routedTo: 'CHANDA' },
@@ -398,8 +455,8 @@ export default function Home() {
         };
         setAuditLogs(prev => [newAudit, ...prev]);
 
-        saveTransactionToFirestore(newTxn).catch(e => console.warn('Firestore txn notice:', e));
-        saveAuditLogToFirestore(newAudit).catch(e => console.warn('Firestore audit notice:', e));
+        saveTransactionToFirestore(newTxn, selectedSeasonId).catch(e => console.warn('Firestore txn notice:', e));
+        saveAuditLogToFirestore(newAudit, selectedSeasonId).catch(e => console.warn('Firestore audit notice:', e));
         setKeypadConfig(prev => ({ ...prev, isOpen: false }));
         return;
       }
@@ -408,7 +465,7 @@ export default function Home() {
       const { updatedMember, allocationLog } = allocatePayment(
         keypadConfig.targetMember,
         amount,
-        season
+        currentViewSeason
       );
 
       // Update members list
@@ -418,6 +475,7 @@ export default function Home() {
       const newTxn: Transaction = {
         id: `txn-${Date.now()}`,
         sequenceNumber: nextSeq,
+        seasonId: selectedSeasonId,
         timestamp: now,
         type: 'MEMBER',
         amount,
@@ -428,6 +486,8 @@ export default function Home() {
         metadata: {
           memberId: updatedMember.id,
           memberName: updatedMember.name,
+          allocations: allocationLog.carryForwardAllocations,
+          seasonId: selectedSeasonId,
         },
       };
       setTransactions(prev => [newTxn, ...prev]);
@@ -436,6 +496,7 @@ export default function Home() {
       const newAudit: AuditLog = {
         id: `log-${Date.now()}`,
         txnId: newTxn.id,
+        seasonId: selectedSeasonId,
         action: 'CREATE',
         previousValue: null,
         newValue: { amount, mode, member: updatedMember.name, allocationLog },
@@ -446,9 +507,9 @@ export default function Home() {
       setAuditLogs(prev => [newAudit, ...prev]);
 
       // Cloud Firestore background synchronization
-      saveMemberToFirestore(updatedMember).catch(e => console.warn('Firestore member notice:', e));
-      saveTransactionToFirestore(newTxn).catch(e => console.warn('Firestore txn notice:', e));
-      saveAuditLogToFirestore(newAudit).catch(e => console.warn('Firestore audit notice:', e));
+      saveMemberToFirestore(updatedMember, selectedSeasonId).catch(e => console.warn('Firestore member notice:', e));
+      saveTransactionToFirestore(newTxn, selectedSeasonId).catch(e => console.warn('Firestore txn notice:', e));
+      saveAuditLogToFirestore(newAudit, selectedSeasonId).catch(e => console.warn('Firestore audit notice:', e));
     } else if (keypadConfig.actionType === 'BUILDING' && keypadConfig.targetBuilding && keypadConfig.targetFlat) {
       const bCode = keypadConfig.targetBuilding.code;
       const fNo = keypadConfig.targetFlat.flatNo;
@@ -483,6 +544,7 @@ export default function Home() {
       const newTxn: Transaction = {
         id: `txn-${Date.now()}`,
         sequenceNumber: nextSeq,
+        seasonId: selectedSeasonId,
         timestamp: now,
         type: 'BUILDING',
         amount,
@@ -493,6 +555,7 @@ export default function Home() {
         metadata: {
           buildingCode: bCode,
           flatNo: fNo,
+          seasonId: selectedSeasonId,
         },
       };
       setTransactions(prev => [newTxn, ...prev]);
@@ -500,6 +563,7 @@ export default function Home() {
       const newAudit: AuditLog = {
         id: `log-${Date.now()}`,
         txnId: newTxn.id,
+        seasonId: selectedSeasonId,
         action: 'CREATE',
         previousValue: null,
         newValue: { amount, building: bCode, flat: fNo, mode },
@@ -510,10 +574,10 @@ export default function Home() {
 
       // Cloud Firestore background synchronization
       if (updatedBuildingToSave) {
-        saveBuildingToFirestore(updatedBuildingToSave).catch(e => console.warn('Firestore building notice:', e));
+        saveBuildingToFirestore(updatedBuildingToSave, selectedSeasonId).catch(e => console.warn('Firestore building notice:', e));
       }
-      saveTransactionToFirestore(newTxn).catch(e => console.warn('Firestore txn notice:', e));
-      saveAuditLogToFirestore(newAudit).catch(e => console.warn('Firestore audit notice:', e));
+      saveTransactionToFirestore(newTxn, selectedSeasonId).catch(e => console.warn('Firestore txn notice:', e));
+      saveAuditLogToFirestore(newAudit, selectedSeasonId).catch(e => console.warn('Firestore audit notice:', e));
     } else if (keypadConfig.actionType === 'BUILDING_TOPUP' && keypadConfig.targetBuilding && keypadConfig.targetFlat) {
       const bCode = keypadConfig.targetBuilding.code;
       const fNo = keypadConfig.targetFlat.flatNo;
@@ -552,6 +616,7 @@ export default function Home() {
       const newTxn: Transaction = {
         id: `txn-${Date.now()}`,
         sequenceNumber: nextSeq,
+        seasonId: selectedSeasonId,
         timestamp: now,
         type: 'BUILDING',
         amount, // Incremental amount only!
@@ -563,6 +628,7 @@ export default function Home() {
           buildingCode: bCode,
           flatNo: fNo,
           category: 'Building Chanda Top-up',
+          seasonId: selectedSeasonId,
         },
       };
       setTransactions(prev => [newTxn, ...prev]);
@@ -570,6 +636,7 @@ export default function Home() {
       const newAudit: AuditLog = {
         id: `log-${Date.now()}`,
         txnId: newTxn.id,
+        seasonId: selectedSeasonId,
         action: 'CREATE',
         previousValue: { amountPaid: prevAmount },
         newValue: { addedAmount: amount, newTotal: newTotalAmount, building: bCode, flat: fNo, mode },
@@ -580,15 +647,16 @@ export default function Home() {
       setAuditLogs(prev => [newAudit, ...prev]);
 
       if (updatedBuildingToSave) {
-        saveBuildingToFirestore(updatedBuildingToSave).catch(e => console.warn('Firestore building notice:', e));
+        saveBuildingToFirestore(updatedBuildingToSave, selectedSeasonId).catch(e => console.warn('Firestore building notice:', e));
       }
-      saveTransactionToFirestore(newTxn).catch(e => console.warn('Firestore txn notice:', e));
-      saveAuditLogToFirestore(newAudit).catch(e => console.warn('Firestore audit notice:', e));
+      saveTransactionToFirestore(newTxn, selectedSeasonId).catch(e => console.warn('Firestore txn notice:', e));
+      saveAuditLogToFirestore(newAudit, selectedSeasonId).catch(e => console.warn('Firestore audit notice:', e));
     } else if (keypadConfig.actionType === 'CHANDA') {
       const desc = note?.trim() || 'General Chanda';
       const newTxn: Transaction = {
         id: `txn-${Date.now()}`,
         sequenceNumber: nextSeq,
+        seasonId: selectedSeasonId,
         timestamp: now,
         type: 'CHANDA',
         amount,
@@ -596,12 +664,16 @@ export default function Home() {
         status: 'ACTIVE',
         description: desc,
         source: isAdmin ? 'WEB' : 'TEL',
+        metadata: {
+          seasonId: selectedSeasonId,
+        },
       };
       setTransactions(prev => [newTxn, ...prev]);
 
       const newAudit: AuditLog = {
         id: `log-${Date.now()}`,
         txnId: newTxn.id,
+        seasonId: selectedSeasonId,
         action: 'CREATE',
         previousValue: null,
         newValue: { amount, description: desc, mode },
@@ -611,13 +683,14 @@ export default function Home() {
       setAuditLogs(prev => [newAudit, ...prev]);
 
       // Cloud Firestore background synchronization
-      saveTransactionToFirestore(newTxn).catch(e => console.warn('Firestore txn notice:', e));
-      saveAuditLogToFirestore(newAudit).catch(e => console.warn('Firestore audit notice:', e));
+      saveTransactionToFirestore(newTxn, selectedSeasonId).catch(e => console.warn('Firestore txn notice:', e));
+      saveAuditLogToFirestore(newAudit, selectedSeasonId).catch(e => console.warn('Firestore audit notice:', e));
     } else if (keypadConfig.actionType === 'EXPENSE') {
-      const desc = note?.trim() || 'Mandal Expense Item';
+      const desc = note?.trim() || 'Mandal Expense';
       const newTxn: Transaction = {
         id: `txn-${Date.now()}`,
         sequenceNumber: nextSeq,
+        seasonId: selectedSeasonId,
         timestamp: now,
         type: 'EXPENSE',
         amount,
@@ -625,12 +698,16 @@ export default function Home() {
         status: 'ACTIVE',
         description: desc,
         source: isAdmin ? 'WEB' : 'TEL',
+        metadata: {
+          seasonId: selectedSeasonId,
+        },
       };
       setTransactions(prev => [newTxn, ...prev]);
 
       const newAudit: AuditLog = {
         id: `log-${Date.now()}`,
         txnId: newTxn.id,
+        seasonId: selectedSeasonId,
         action: 'CREATE',
         previousValue: null,
         newValue: { amount, description: desc, mode },
@@ -639,14 +716,18 @@ export default function Home() {
       };
       setAuditLogs(prev => [newAudit, ...prev]);
 
-      // Cloud Firestore background synchronization
-      saveTransactionToFirestore(newTxn).catch(e => console.warn('Firestore txn notice:', e));
-      saveAuditLogToFirestore(newAudit).catch(e => console.warn('Firestore audit notice:', e));
+      saveTransactionToFirestore(newTxn, selectedSeasonId).catch(e => console.warn('Firestore txn notice:', e));
+      saveAuditLogToFirestore(newAudit, selectedSeasonId).catch(e => console.warn('Firestore audit notice:', e));
     }
   };
 
   // Reversal Protocol (<id> undo) - Cascades to Member/Building state & Firestore
   const handleUndoTransaction = (txn: Transaction) => {
+    if (isReadOnlyMode) {
+      alert(`Cannot reverse transactions in ${currentViewSeason.name || currentViewSeason.id} because it is Archived.`);
+      return;
+    }
+
     if (txn.status === 'REVERSED') {
       alert(`Transaction #${txn.sequenceNumber} is already reversed.`);
       return;
@@ -723,47 +804,63 @@ export default function Home() {
     }
   };
 
+  // Helper to update the currently viewed season in allSeasons, season, and Firestore
+  const updateCurrentSeason = (updater: (prev: Season) => Season) => {
+    const updated = updater(currentViewSeason);
+    setAllSeasons(prev => {
+      const exists = prev.some(s => s.id === updated.id);
+      return exists ? prev.map(s => s.id === updated.id ? updated : s) : [...prev, updated];
+    });
+    setSeason(prev => (prev.id === updated.id || prev.isActive) ? { ...prev, ...updated } : prev);
+    saveSeasonToFirestore(updated).catch(e => console.warn('Firestore season notice:', e));
+  };
+
   // Admin: Toggle month block
   const handleToggleBlockMonth = (month: string) => {
-    setSeason(prev => {
+    updateCurrentSeason(prev => {
       const isBlocked = prev.blockedMonths.includes(month);
       const newBlocked = isBlocked
         ? prev.blockedMonths.filter(m => m !== month)
         : [...prev.blockedMonths, month];
-      const updated = { ...prev, blockedMonths: newBlocked };
-      saveSeasonToFirestore(updated).catch(e => console.warn('Firestore season notice:', e));
-      return updated;
+      return { ...prev, blockedMonths: newBlocked };
     });
   };
 
   // Admin: Add month to season schedule
-  const handleAddMonth = (month: string) => {
-    setSeason(prev => {
+  const handleAddMonth = (month: string, amount?: number) => {
+    updateCurrentSeason(prev => {
       if (prev.months.includes(month)) return prev;
       const newMonths = [...prev.months, month].sort();
-      const updated = { ...prev, months: newMonths };
-      saveSeasonToFirestore(updated).catch(e => console.warn('Firestore season notice:', e));
-      return updated;
+      const newMonthQuotas = { ...(prev.monthQuotas || {}) };
+      if (amount !== undefined) {
+        newMonthQuotas[month] = amount;
+      }
+      return { ...prev, months: newMonths, monthQuotas: newMonthQuotas };
     });
   };
 
   // Admin: Delete month from season schedule
   const handleDeleteMonth = (month: string) => {
-    setSeason(prev => {
+    updateCurrentSeason(prev => {
       const newMonths = prev.months.filter(m => m !== month);
       const newBlocked = prev.blockedMonths.filter(m => m !== month);
-      const updated = { ...prev, months: newMonths, blockedMonths: newBlocked };
-      saveSeasonToFirestore(updated).catch(e => console.warn('Firestore season notice:', e));
-      return updated;
+      const newMonthQuotas = { ...(prev.monthQuotas || {}) };
+      delete newMonthQuotas[month];
+      return { ...prev, months: newMonths, blockedMonths: newBlocked, monthQuotas: newMonthQuotas };
     });
   };
 
   // Admin: Update default monthly quota
   const handleUpdateDefaultQuota = (newQuota: number) => {
-    setSeason(prev => {
-      const updated = { ...prev, defaultMonthlyQuota: newQuota };
-      saveSeasonToFirestore(updated).catch(e => console.warn('Firestore season notice:', e));
-      return updated;
+    updateCurrentSeason(prev => ({ ...prev, defaultMonthlyQuota: newQuota }));
+  };
+
+  // Admin: Update individual month target quota
+  const handleUpdateMonthQuota = (month: string, amount: number) => {
+    updateCurrentSeason(prev => {
+      const currentMonthQuotas = { ...(prev.monthQuotas || {}) };
+      currentMonthQuotas[month] = amount;
+      return { ...prev, monthQuotas: currentMonthQuotas };
     });
   };
 
@@ -782,7 +879,7 @@ export default function Home() {
           ...m,
           monthlyOverrides: currentOverrides,
         };
-        saveMemberToFirestore(updated).catch(e => console.warn('Firestore member notice:', e));
+        saveMemberToFirestore(updated, selectedSeasonId).catch(e => console.warn('Firestore member notice:', e));
         return updated;
       })
     );
@@ -800,7 +897,7 @@ export default function Home() {
       payments: {},
     };
     setMembers(prev => [...prev, newM]);
-    saveMemberToFirestore(newM).catch(e => console.warn('Firestore member notice:', e));
+    saveMemberToFirestore(newM, selectedSeasonId).catch(e => console.warn('Firestore member notice:', e));
   };
 
   // Admin: Bulk Add members
@@ -818,26 +915,26 @@ export default function Home() {
 
     setMembers(prev => [...prev, ...createdList]);
     createdList.forEach(m => {
-      saveMemberToFirestore(m).catch(e => console.warn('Firestore member notice:', e));
+      saveMemberToFirestore(m, selectedSeasonId).catch(e => console.warn('Firestore member notice:', e));
     });
   };
 
   // Admin: Update member
   const handleUpdateMember = (updated: Member) => {
     setMembers(prev => prev.map(m => m.id === updated.id ? updated : m));
-    saveMemberToFirestore(updated).catch(e => console.warn('Firestore member notice:', e));
+    saveMemberToFirestore(updated, selectedSeasonId).catch(e => console.warn('Firestore member notice:', e));
   };
 
   // Admin: Permanently Delete member
   const handleDeleteMember = (memberId: string) => {
     setMembers(prev => prev.filter(m => m.id !== memberId));
-    deleteMemberFromFirestore(memberId).catch(e => console.warn('Firestore delete member notice:', e));
+    deleteMemberFromFirestore(memberId, selectedSeasonId).catch(e => console.warn('Firestore delete member notice:', e));
   };
 
   // Admin: Update building (floors, flats, collection)
   const handleUpdateBuilding = (updatedBuilding: Building) => {
     setBuildings(prev => prev.map(b => b.id === updatedBuilding.id ? updatedBuilding : b));
-    saveBuildingToFirestore(updatedBuilding).catch(e => console.warn('Firestore building notice:', e));
+    saveBuildingToFirestore(updatedBuilding, selectedSeasonId).catch(e => console.warn('Firestore building notice:', e));
   };
 
   // Admin: Add building wing
@@ -855,7 +952,7 @@ export default function Home() {
       ],
     };
     setBuildings(prev => [...prev, newB]);
-    saveBuildingToFirestore(newB).catch(e => console.warn('Firestore building notice:', e));
+    saveBuildingToFirestore(newB, selectedSeasonId).catch(e => console.warn('Firestore building notice:', e));
   };
 
   // Admin: Delete building wing
@@ -863,7 +960,7 @@ export default function Home() {
     const toDelete = buildings.find(b => b.id === buildingId);
     setBuildings(prev => prev.filter(b => b.id !== buildingId));
     if (toDelete) {
-      deleteBuildingFromFirestore(toDelete.code).catch(e => console.warn('Firestore delete building notice:', e));
+      deleteBuildingFromFirestore(toDelete.code, selectedSeasonId).catch(e => console.warn('Firestore delete building notice:', e));
     }
   };
 
@@ -1144,52 +1241,38 @@ export default function Home() {
     saveAuditLogToFirestore(transitionLog).catch(e => console.warn('Firestore audit notice:', e));
   };
 
-  // Admin: Season Rollover Engine
-  const handleRolloverSeason = (newSeasonId: string, start: string, end: string) => {
-    const closingSurplus = summary.netBalance;
-    
-    // Compute new previousYearPending per member
-    setMembers(prev =>
-      prev.map(m => {
-        const due = (m.previousYearPending || 0) + Math.max(0, 100 - (m.payments[season.liveMonth] || 0));
-        const updatedM = {
-          ...m,
-          previousYearPending: m.isHonorary ? 0 : due,
-          payments: {},
-        };
-        saveMemberToFirestore(updatedM).catch(e => console.warn('Firestore member notice:', e));
-        return updatedM;
-      })
-    );
+  // Admin: Deploy New Season via Wizard (Isolated subcollections)
+  const handleDeployNewSeason = async (
+    newSeason: Season,
+    newMembers: Member[],
+    newBuildings: Building[],
+    archiveCurrent: boolean
+  ) => {
+    try {
+      await deployNewSeasonToFirestore(
+        newSeason,
+        newMembers,
+        newBuildings,
+        archiveCurrent ? season : undefined
+      );
 
-    const newSeasonData: Season = {
-      id: newSeasonId,
-      name: `Ganesh Utsav ${newSeasonId}`,
-      startDate: start,
-      endDate: end,
-      openingBalance: closingSurplus,
-      isActive: true,
-      status: 'ACTIVE',
-      liveMonth: start,
-      defaultMonthlyQuota: 200,
-      months: [start, '2027-10', '2027-11', '2027-12', '2028-01', '2028-02', '2028-03', '2028-04', '2028-05', '2028-06', '2028-07', '2028-08'],
-      blockedMonths: ['2027-12', '2028-01', '2028-02', '2028-03', '2028-04', '2028-05'],
-    };
-    setSeason(newSeasonData);
-    saveSeasonToFirestore(newSeasonData).catch(e => console.warn('Firestore season notice:', e));
-
-    const rolloverLog: AuditLog = {
-      id: `log-${Date.now()}`,
-      action: 'ROLLOVER',
-      previousValue: { season: season.id, surplus: closingSurplus },
-      newValue: { newSeason: newSeasonId, openingBalance: closingSurplus },
-      performedBy: 'Admin:RolloverWizard',
-      timestamp: new Date().toISOString(),
-      notes: `Rollover committed. Opening balance set to ₹${closingSurplus}`,
-    };
-    setAuditLogs(prev => [rolloverLog, ...prev]);
-    saveAuditLogToFirestore(rolloverLog).catch(e => console.warn('Firestore audit notice:', e));
+      setSelectedSeasonId(newSeason.id);
+      if (archiveCurrent) {
+        setSeason(newSeason);
+        setAllSeasons(prev => {
+          const filtered = prev.filter(s => s.id !== newSeason.id);
+          const updated = filtered.map(s => s.id === season.id ? { ...s, isActive: false, status: 'ARCHIVED' as const } : s);
+          return [newSeason, ...updated];
+        });
+      } else {
+        setAllSeasons(prev => [newSeason, ...prev.filter(s => s.id !== newSeason.id)]);
+      }
+    } catch (err) {
+      console.error('Failed to deploy new season:', err);
+      alert('Failed to deploy new season. Please check your connection.');
+    }
   };
+
 
   // Admin: Add Transaction
   const handleAddTransaction = (txnData: Omit<Transaction, 'id' | 'sequenceNumber'>) => {
@@ -1279,7 +1362,10 @@ export default function Home() {
       <main className="w-full transition-all duration-300 max-w-4xl px-2 sm:px-4">
         {/* iOS Header */}
         <IOSHeader
-          season={season}
+          season={currentViewSeason}
+          allSeasons={allSeasons}
+          selectedSeasonId={selectedSeasonId}
+          onSelectSeason={setSelectedSeasonId}
           summary={summary}
           isAdmin={isAdmin}
           user={user}
@@ -1291,7 +1377,7 @@ export default function Home() {
         <div className="px-3 sm:px-4 mt-2">
           {activeTab === 'members' && (
             <MembersTab
-              season={season}
+              season={currentViewSeason}
               members={members}
               onOpenPaymentModal={openMemberPaymentModal}
               isAdmin={isAdmin}
@@ -1330,7 +1416,7 @@ export default function Home() {
 
           {activeTab === 'admin' && (
             <AdminTab
-              season={season}
+              season={currentViewSeason}
               members={members}
               buildings={buildings}
               transactions={transactions}
@@ -1345,18 +1431,21 @@ export default function Home() {
               onUpdateBuilding={handleUpdateBuilding}
               onDeleteBuilding={handleDeleteBuilding}
               onToggleBlockMonth={handleToggleBlockMonth}
-              onRolloverSeason={handleRolloverSeason}
+              onRolloverSeason={() => {}}
               onUndoTransaction={handleUndoTransaction}
               onAddTransaction={handleAddTransaction}
               onEditTransaction={handleEditTransaction}
               onAddMonth={handleAddMonth}
               onDeleteMonth={handleDeleteMonth}
               onUpdateDefaultQuota={handleUpdateDefaultQuota}
+              onUpdateMonthQuota={handleUpdateMonthQuota}
               onSetMemberMonthOverride={handleSetMemberMonthOverride}
               onOpenSnapshotModal={() => setIsSnapshotModalOpen(true)}
               allSeasons={allSeasons}
               onCreateDraftSeason={handleCreateDraftSeason}
               onSetLiveSeason={handleSetLiveSeason}
+              onDeployNewSeason={handleDeployNewSeason}
+              onSelectSeason={setSelectedSeasonId}
               onTogglePauseMember={handleTogglePauseMember}
               onDeleteSeason={handleDeleteSeason}
             />

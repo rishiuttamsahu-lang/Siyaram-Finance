@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 
 import { SetLiveTransitionModal } from '../SetLiveTransitionModal';
+import { NewSeasonWizardModal } from './admin/NewSeasonWizardModal';
 
 export interface SeasonHistoryRecord {
   id: string;
@@ -53,6 +54,13 @@ interface SeasonsManagerProps {
   onSetLiveSeason?: (draftSeasonId: string) => void;
   onTogglePauseMember?: (member: Member) => void;
   onDeleteSeason?: (seasonId: string) => void;
+  onDeployNewSeason?: (
+    newSeason: Season,
+    newMembers: Member[],
+    newBuildings: Building[],
+    archiveCurrent: boolean
+  ) => Promise<void>;
+  onSelectSeason?: (seasonId: string) => void;
   isCreateModalOpen?: boolean;
   setIsCreateModalOpen?: (open: boolean) => void;
   onNavigateTab?: (tabId: string) => void;
@@ -70,12 +78,20 @@ export const SeasonsManager: React.FC<SeasonsManagerProps> = ({
   onSetLiveSeason,
   onTogglePauseMember,
   onDeleteSeason,
+  onDeployNewSeason,
+  onSelectSeason,
   isCreateModalOpen,
   setIsCreateModalOpen,
   onNavigateTab,
 }) => {
   // Live financial metrics
-  const mandalSummary = calculateMandalTotals(transactions, season.openingBalance);
+  const mandalSummary = calculateMandalTotals(
+    transactions,
+    season.openingBalance || 0,
+    50000,
+    season.openingCashBalance,
+    season.openingOnlineBalance
+  );
   const currentTotalIncome = mandalSummary.totalInflows;
   const currentTotalExpense = mandalSummary.totalExpenses;
   const currentBalance = mandalSummary.netBalance;
@@ -111,7 +127,13 @@ export const SeasonsManager: React.FC<SeasonsManagerProps> = ({
 
   useEffect(() => {
     if (allSeasons && allSeasons.length > 0) {
-      const records: SeasonHistoryRecord[] = allSeasons.map(s => {
+      const seen = new Set<string>();
+      const uniqueSeasons = allSeasons.filter(s => {
+        if (!s.id || seen.has(s.id)) return false;
+        seen.add(s.id);
+        return true;
+      });
+      const records: SeasonHistoryRecord[] = uniqueSeasons.map(s => {
         const isLive = s.isActive || s.id === season.id;
         const isDraft = s.status === 'DRAFT' || (!s.isActive && s.status !== 'ARCHIVED' && s.status !== 'CLOSED');
         return {
@@ -131,7 +153,7 @@ export const SeasonsManager: React.FC<SeasonsManagerProps> = ({
         };
       });
       setSeasons(records);
-      if (!selectedSeasonId) {
+      if (!selectedSeasonId || !records.some(r => r.id === selectedSeasonId)) {
         setSelectedSeasonId(season.id || records[0]?.id || '');
       }
       return;
@@ -305,6 +327,7 @@ export const SeasonsManager: React.FC<SeasonsManagerProps> = ({
                   type="button"
                   onClick={() => {
                     setSelectedSeasonId(s.id);
+                    onSelectSeason?.(s.id);
                     setEditName(s.name);
                     setEditStart(s.startDate);
                     setEditEnd(s.endDate);
@@ -790,109 +813,26 @@ export const SeasonsManager: React.FC<SeasonsManagerProps> = ({
         </div>
       )}
 
-      {/* CREATE NEW SEASON MODAL */}
+      {/* NEW SEASON WIZARD MODAL */}
       {isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-xs">
-          <div className="w-full max-w-sm rounded-3xl bg-white border border-slate-200 p-4 space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <h4 className="font-semibold text-sm text-slate-900">New Season</h4>
-              <button
-                type="button"
-                onClick={() => setCreateOpen(false)}
-                className="p-1 rounded-full text-slate-400 hover:text-slate-600"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateSeason} className="space-y-2.5 text-xs">
-              <div>
-                <label className="block font-medium text-slate-600 mb-1">Season Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Ganesh Utsav 2027–28"
-                  value={newSeasonName}
-                  onChange={(e) => setNewSeasonName(e.target.value)}
-                  className="w-full p-2 rounded-xl border border-slate-200 font-semibold"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-medium text-slate-600 mb-1">Start</label>
-                  <input
-                    type="month"
-                    required
-                    value={newSeasonStart}
-                    onChange={(e) => setNewSeasonStart(e.target.value)}
-                    className="w-full p-2 rounded-xl border border-slate-200 font-semibold"
-                  />
-                </div>
-                <div>
-                  <label className="block font-medium text-slate-600 mb-1">End</label>
-                  <input
-                    type="month"
-                    required
-                    value={newSeasonEnd}
-                    onChange={(e) => setNewSeasonEnd(e.target.value)}
-                    className="w-full p-2 rounded-xl border border-slate-200 font-semibold"
-                  />
-                </div>
-              </div>
-
-              <div className="p-2 rounded-xl bg-slate-50 border border-slate-100 text-[11px] text-slate-600">
-                Opening Balance: <strong>{formatINR(currentBalance)}</strong> (Carried from closing)
-              </div>
-
-              <div>
-                <label className="block font-medium text-slate-600 mb-1">Creation Mode</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setNewSeasonStatus('Draft')}
-                    className={`py-2 px-2.5 rounded-xl border text-xs text-left transition cursor-pointer ${
-                      newSeasonStatus === 'Draft'
-                        ? 'bg-amber-50 border-amber-300 text-amber-900 shadow-xs ring-1 ring-amber-300'
-                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    <div className="font-bold">Draft (Recommended)</div>
-                    <div className="text-[10px] text-amber-700/90 font-normal mt-0.5">Stage & review before going live</div>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setNewSeasonStatus('Active')}
-                    className={`py-2 px-2.5 rounded-xl border text-xs text-left transition cursor-pointer ${
-                      newSeasonStatus === 'Active'
-                        ? 'bg-emerald-50 border-emerald-300 text-emerald-900 shadow-xs ring-1 ring-emerald-300'
-                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                    }`}
-                  >
-                    <div className="font-bold">Live Immediately</div>
-                    <div className="text-[10px] text-emerald-700/90 font-normal mt-0.5">Archive old & switch immediately</div>
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setCreateOpen(false)}
-                  className="px-3 py-1.5 rounded-lg text-slate-600 font-semibold cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-3.5 py-1.5 rounded-xl bg-slate-900 text-white font-semibold hover:bg-slate-800 cursor-pointer"
-                >
-                  {newSeasonStatus === 'Draft' ? 'Create Draft' : 'Create & Set Live'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <NewSeasonWizardModal
+          isOpen={isCreateOpen}
+          onClose={() => setCreateOpen(false)}
+          currentSeason={season}
+          existingMembers={members}
+          existingBuildings={buildings}
+          existingTransactions={transactions}
+          onDeployNewSeason={async (newSeason, newMembers, newBuildings, archiveCurrent) => {
+            if (onDeployNewSeason) {
+              await onDeployNewSeason(newSeason, newMembers, newBuildings, archiveCurrent);
+            } else if (onCreateDraftSeason && !archiveCurrent) {
+              onCreateDraftSeason(newSeason);
+            } else if (onRolloverSeason) {
+              onRolloverSeason(newSeason.id, newSeason.startDate, newSeason.endDate);
+            }
+            setCreateOpen(false);
+          }}
+        />
       )}
 
       {/* EDIT MODAL */}

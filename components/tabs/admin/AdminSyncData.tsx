@@ -67,7 +67,13 @@ export const AdminSyncData: React.FC<AdminSyncDataProps> = ({
   const [selectedSnapshotToRestore, setSelectedSnapshotToRestore] = useState<{ id: string; note: string; date: string } | null>(null);
   const [importSuccessMsg, setImportSuccessMsg] = useState<string | null>(null);
 
-  const summary = calculateMandalTotals(transactions, season.openingBalance);
+  const summary = calculateMandalTotals(
+    transactions,
+    season.openingBalance || 0,
+    50000,
+    season.openingCashBalance,
+    season.openingOnlineBalance
+  );
 
   // 1. Force Sync All
   const handleForceSyncAll = () => {

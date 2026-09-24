@@ -9,7 +9,10 @@ export interface Season {
   startDate: string; // "2026-09"
   endDate: string; // "2027-08"
   openingBalance: number;
+  openingCashBalance?: number;
+  openingOnlineBalance?: number;
   isActive: boolean;
+  isArchived?: boolean;
   status?: 'ACTIVE' | 'DRAFT' | 'ARCHIVED' | 'CLOSED';
   liveMonth: string; // "YYYY-MM" e.g. "2026-09"
   defaultMonthlyQuota: number; // e.g. 200
@@ -22,6 +25,7 @@ export interface Member {
   id: string;
   name: string;
   previousYearPending: number;
+  carryForwardPending?: Record<string, number>; // Multi-season breakdown e.g. { "2024-25": 250, "2025-26": 800 }
   isHonorary: boolean; // e.g. Ronik, Suraj (no dues)
   isPaused: boolean;
   pausedAtMonth?: string;
@@ -60,11 +64,15 @@ export interface TransactionMetadata {
   category?: string;
   donorName?: string;
   note?: string;
+  allocations?: Record<string, number>; // Breakdown e.g. { "2025-26": 800, "2026-27": 200 }
+  carryForwardDeductions?: Record<string, number>;
+  seasonId?: string;
 }
 
 export interface Transaction {
   id: string;
   sequenceNumber: number; // Permanent human readable code e.g. 1, 2, 3
+  seasonId?: string; // Scoped season ID e.g. "2026-2027"
   timestamp: string;
   type: TransactionType;
   amount: number;
@@ -78,6 +86,7 @@ export interface Transaction {
 export interface AuditLog {
   id: string;
   txnId?: string;
+  seasonId?: string;
   action: AuditAction;
   previousValue: any;
   newValue: any;
@@ -97,6 +106,7 @@ export interface MemberDueSummary {
   memberId: string;
   memberName: string;
   previousYearPending: number;
+  carryForwardPending?: Record<string, number>;
   currentSeasonPaid: number;
   currentSeasonTarget: number;
   currentSeasonPending: number;
@@ -116,6 +126,8 @@ export interface FinanceSummary {
   offlineExpenses: number;
   netOfflineBalance: number;
   openingBalance: number;
+  openingCashBalance?: number;
+  openingOnlineBalance?: number;
   personalBankBalance: number;
   actualPersonalSavings: number; // Bank Balance - Net Online Mandal Pool
 }

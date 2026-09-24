@@ -31,7 +31,13 @@ export const SetLiveTransitionModal: React.FC<SetLiveTransitionModalProps> = ({
   if (!isOpen) return null;
 
   // 1. Concluding season financial metrics
-  const mandalSummary = calculateMandalTotals(transactions, currentSeason.openingBalance || 0);
+  const mandalSummary = calculateMandalTotals(
+    transactions,
+    currentSeason.openingBalance || 0,
+    50000,
+    currentSeason.openingCashBalance,
+    currentSeason.openingOnlineBalance
+  );
   const totalInflows = mandalSummary.totalInflows;
   const totalExpenses = mandalSummary.totalExpenses;
   const netOnline = mandalSummary.netOnlineBalance;

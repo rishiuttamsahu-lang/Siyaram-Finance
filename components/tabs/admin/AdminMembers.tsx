@@ -126,10 +126,28 @@ export const AdminMembers: React.FC<AdminMembersProps> = ({
   const handleSaveEdit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingMember || !onUpdateMember) return;
+    const newPrevPending = Math.max(0, parseInt(editPrevPending, 10) || 0);
+
+    // Synchronize carryForwardPending to prevent allocation desync
+    let newCarryForward: Record<string, number> = {};
+    if (newPrevPending === 0) {
+      newCarryForward = {};
+    } else if (editingMember.carryForwardPending && Object.keys(editingMember.carryForwardPending).length > 0) {
+      const keys = Object.keys(editingMember.carryForwardPending);
+      if (keys.length === 1) {
+        newCarryForward = { [keys[0]]: newPrevPending };
+      } else {
+        newCarryForward = { ...editingMember.carryForwardPending, [keys[keys.length - 1]]: newPrevPending };
+      }
+    } else {
+      newCarryForward = { Previous: newPrevPending };
+    }
+
     const updated: Member = {
       ...editingMember,
       name: editName.trim() || editingMember.name,
-      previousYearPending: parseInt(editPrevPending, 10) || 0,
+      previousYearPending: newPrevPending,
+      carryForwardPending: newCarryForward,
       isHonorary: editHonorary,
     };
     onUpdateMember(updated);

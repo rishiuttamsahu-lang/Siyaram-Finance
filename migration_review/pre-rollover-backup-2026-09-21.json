@@ -1,0 +1,242 @@
+{
+  "exportedAt": "2026-09-21T16:48:04.141Z",
+  "season": {
+    "startDate": "2025-09",
+    "defaultMonthlyQuota": 200,
+    "months": [
+      "2025-09",
+      "2025-10",
+      "2025-11",
+      "2025-12",
+      "2026-01",
+      "2026-02",
+      "2026-03",
+      "2026-04",
+      "2026-05",
+      "2026-06",
+      "2026-07",
+      "2026-08",
+      "2026-09"
+    ],
+    "id": "2025-26",
+    "blockedMonths": [
+      "2025-12",
+      "2026-01",
+      "2026-02",
+      "2026-03",
+      "2026-04",
+      "2026-05"
+    ],
+    "monthQuotas": {
+      "2025-09": 100,
+      "2026-08": 200,
+      "2026-09": 250,
+      "2026-02": 100,
+      "2025-10": 100,
+      "2026-07": 200,
+      "2026-05": 100,
+      "2026-04": 100,
+      "2026-06": 200,
+      "2026-01": 100,
+      "2025-12": 100,
+      "2026-03": 100,
+      "2025-11": 100
+    },
+    "isActive": true,
+    "endDate": "2026-09",
+    "openingBalance": 6500,
+    "name": "Ganesh Utsav 2025–26",
+    "liveMonth": "2026-09"
+  },
+  "members": [
+    {
+      "isPaused": false,
+      "isHonorary": false,
+      "aliases": [
+        "PIYUSH"
+      ],
+      "payments": {
+        "2025-11": 100,
+        "2025-09": 100,
+        "2026-06": 191,
+        "2025-10": 100
+      },
+      "id": "m-1789057079677",
+      "name": "PIYUSH",
+      "monthlyOverrides": {},
+      "previousYearPending": 0,
+      "normalizedName": "piyush"
+    },
+    {
+      "id": "m-1789057109909",
+      "payments": {
+        "2026-09": 10,
+        "2025-11": 100,
+        "2026-08": 200,
+        "2025-09": 100,
+        "2026-07": 200,
+        "2026-06": 200,
+        "2025-10": 100
+      },
+      "aliases": [
+        "ARYAN"
+      ],
+      "isHonorary": false,
+      "monthlyOverrides": {},
+      "isPaused": false,
+      "name": "ARYAN",
+      "previousYearPending": 0,
+      "normalizedName": "aryan"
+    },
+    {
+      "isHonorary": false,
+      "aliases": [
+        "PANKAJ"
+      ],
+      "payments": {
+        "2025-10": 100,
+        "2026-07": 200,
+        "2026-08": 90,
+        "2025-09": 100,
+        "2026-06": 200,
+        "2025-11": 100
+      },
+      "normalizedName": "pankaj",
+      "name": "PANKAJ",
+      "isPaused": false,
+      "previousYearPending": 0,
+      "id": "m-1789057123073",
+      "monthlyOverrides": {}
+    },
+    {
+      "previousYearPending": 0,
+      "name": "PAVAN",
+      "aliases": [
+        "PAVAN"
+      ],
+      "isPaused": false,
+      "monthlyOverrides": {},
+      "isHonorary": false,
+      "normalizedName": "pavan",
+      "payments": {
+        "2026-09": 0,
+        "2025-11": 100,
+        "2026-06": 200,
+        "2026-07": 200,
+        "2026-08": 130,
+        "2025-09": 100,
+        "2025-10": 100
+      },
+      "id": "m-1789057132917"
+    },
+    {
+      "normalizedName": "rishi",
+      "name": "RISHI",
+      "isHonorary": false,
+      "aliases": [
+        "RISHI"
+      ],
+      "isPaused": false,
+      "previousYearPending": 0,
+      "monthlyOverrides": {},
+      "payments": {
+        "2026-09": 8,
+        "2025-11": 100,
+        "2025-10": 100,
+        "2026-06": 200,
+        "2026-08": 200,
+        "2025-09": 100,
+        "2026-07": 200
+      },
+      "id": "m-1789057143812"
+    },
+    {
+      "payments": {
+        "2025-11": 100,
+        "2025-10": 100,
+        "2026-06": 200,
+        "2026-08": 140,
+        "2025-09": 100,
+        "2026-07": 200
+      },
+      "aliases": [
+        "AMAN"
+      ],
+      "isPaused": false,
+      "name": "AMAN",
+      "previousYearPending": 0,
+      "isHonorary": false,
+      "normalizedName": "aman",
+      "id": "m-1789057150478",
+      "monthlyOverrides": {}
+    },
+    {
+      "previousYearPending": 0,
+      "isHonorary": true,
+      "name": "RONIK",
+      "isPaused": false,
+      "id": "m-1789057430836",
+      "aliases": [
+        "RONIK"
+      ],
+      "monthlyOverrides": {},
+      "payments": {},
+      "normalizedName": "ronik"
+    },
+    {
+      "previousYearPending": 0,
+      "payments": {},
+      "aliases": [
+        "SURAJ"
+      ],
+      "isHonorary": true,
+      "normalizedName": "suraj",
+      "isPaused": false,
+      "name": "SURAJ",
+      "id": "m-1789057437549",
+      "monthlyOverrides": {}
+    },
+    {
+      "normalizedName": "ayushs",
+      "previousYearPending": 0,
+      "id": "m-ayush-s",
+      "name": "AYUSH.S",
+      "isHonorary": false,
+      "payments": {
+        "2025-09": 100,
+        "2025-11": 100,
+        "2026-06": 200,
+        "2025-10": 100
+      },
+      "monthlyOverrides": {},
+      "isPaused": false,
+      "aliases": [
+        "AYUSH.S"
+      ]
+    },
+    {
+      "payments": {
+        "2026-07": 200,
+        "2026-08": 200,
+        "2026-09": 200
+      },
+      "id": "m-sharavan",
+      "aliases": [
+        "SHARAVAN"
+      ],
+      "isPaused": false,
+      "name": "SHARAVAN",
+      "normalizedName": "sharavan",
+      "isHonorary": false,
+      "previousYearPending": 0,
+      "monthlyOverrides": {
+        "2025-12": 0,
+        "2025-11": 0,
+        "2026-09": 200,
+        "2025-10": 0,
+        "2025-09": 0,
+        "2026-06": 0
+      }
+    }
+  ]
+}

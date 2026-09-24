@@ -188,21 +188,50 @@ async function getActiveSeason(env) {
   return docs.length > 0 ? fromFirestoreDoc(docs[0]) : null;
 }
 
-async function getMembers(env) {
+async function getMembers(env, seasonId = null) {
+  if (seasonId) {
+    const resp = await firestoreFetch(env, `seasons/${seasonId}/members?pageSize=100`);
+    if (resp.ok) {
+      const json = await resp.json();
+      const docs = (json.documents || []).map(fromFirestoreDoc);
+      if (docs.length > 0) return docs;
+    }
+    if (seasonId !== '2025-26') return [];
+  }
   const resp = await firestoreFetch(env, 'members?pageSize=100');
   if (!resp.ok) return [];
   const json = await resp.json();
   return (json.documents || []).map(fromFirestoreDoc);
 }
 
-async function getBuildings(env) {
+async function getBuildings(env, seasonId = null) {
+  if (seasonId) {
+    const resp = await firestoreFetch(env, `seasons/${seasonId}/buildings?pageSize=50`);
+    if (resp.ok) {
+      const json = await resp.json();
+      const docs = (json.documents || []).map(fromFirestoreDoc);
+      if (docs.length > 0) return docs;
+    }
+    if (seasonId !== '2025-26') return [];
+  }
   const resp = await firestoreFetch(env, 'buildings?pageSize=50');
   if (!resp.ok) return [];
   const json = await resp.json();
   return (json.documents || []).map(fromFirestoreDoc);
 }
 
-async function getTransactions(env, pageSize = 300) {
+async function getTransactions(env, seasonId = null, pageSize = 300) {
+  if (seasonId) {
+    const resp = await firestoreFetch(env, `seasons/${seasonId}/transactions?pageSize=${pageSize}`);
+    if (resp.ok) {
+      const json = await resp.json();
+      const docs = (json.documents || []).map(fromFirestoreDoc);
+      if (docs.length > 0) {
+        return docs.sort((a, b) => (b.sequenceNumber || 0) - (a.sequenceNumber || 0));
+      }
+    }
+    if (seasonId !== '2025-26') return [];
+  }
   const resp = await firestoreFetch(env, `transactions?pageSize=${pageSize}`);
   if (!resp.ok) return [];
   const json = await resp.json();
@@ -210,8 +239,8 @@ async function getTransactions(env, pageSize = 300) {
   return list.sort((a, b) => (b.sequenceNumber || 0) - (a.sequenceNumber || 0));
 }
 
-async function getNextSequenceNumber(env) {
-  const txns = await getTransactions(env, 300);
+async function getNextSequenceNumber(env, seasonId = null) {
+  const txns = await getTransactions(env, seasonId, 300);
   if (txns.length === 0) return 1;
   let maxSeq = 0;
   for (const t of txns) {
@@ -222,20 +251,21 @@ async function getNextSequenceNumber(env) {
   return maxSeq + 1;
 }
 
-async function saveDocument(env, collection, docId, data) {
+async function saveDocument(env, collection, docId, data, seasonId = null) {
   const fields = {};
   for (const [k, v] of Object.entries(data)) {
     if (v !== undefined) fields[k] = toFirestoreValue(v);
   }
   const maskParams = Object.keys(fields).map(k => `updateMask.fieldPaths=${encodeURIComponent(k)}`).join('&');
-  const path = maskParams ? `${collection}/${docId}?${maskParams}` : `${collection}/${docId}`;
+  const basePath = seasonId ? `seasons/${seasonId}/${collection}` : collection;
+  const path = maskParams ? `${basePath}/${docId}?${maskParams}` : `${basePath}/${docId}`;
 
   const resp = await firestoreFetch(env, path, {
     method: 'PATCH',
     body: JSON.stringify({ fields }),
   });
   if (!resp.ok) {
-    throw new Error(`Failed to save ${collection}/${docId}: ${await resp.text()}`);
+    throw new Error(`Failed to save ${basePath}/${docId}: ${await resp.text()}`);
   }
 }
 
@@ -336,7 +366,7 @@ function getMemberTarget(member, season, month) {
 
 function computeMemberDues(member, season) {
   if (member.isHonorary) {
-    return { previousYearPending: 0, currentSeasonPaid: 0, currentSeasonTarget: 0, currentSeasonDue: 0, totalDue: 0 };
+    return { previousYearPending: 0, currentSeasonPaid: 0, currentSeasonTarget: 0, currentSeasonDue: 0, totalDue: 0, carryForwardPending: {} };
   }
 
   const liveMonth = season.liveMonth || (season.months && season.months[0]) || '';
@@ -355,30 +385,52 @@ function computeMemberDues(member, season) {
   }
 
   const currentSeasonDue = Math.max(0, currentSeasonTarget - currentSeasonPaid);
-  const prevPending = member.previousYearPending || 0;
-  const totalDue = prevPending + currentSeasonDue;
+  
+  let totalPastDebt = 0;
+  if (member.carryForwardPending && typeof member.carryForwardPending === 'object') {
+    totalPastDebt = Object.values(member.carryForwardPending).reduce((sum, v) => sum + (v || 0), 0);
+  } else {
+    totalPastDebt = member.previousYearPending || 0;
+  }
+
+  const totalDue = totalPastDebt + currentSeasonDue;
 
   return {
-    previousYearPending: prevPending,
+    previousYearPending: totalPastDebt,
     currentSeasonPaid,
     currentSeasonTarget,
     currentSeasonDue,
     totalDue,
+    carryForwardPending: member.carryForwardPending || {},
   };
 }
 
 function allocateMemberPayment(member, season, amount) {
   let remaining = amount;
   let prevPaid = 0;
-  let newPrevPending = member.previousYearPending || 0;
+  const carryForwardDeductions = {};
+  const newCarryForward = member.carryForwardPending ? { ...member.carryForwardPending } : {};
 
-  // Step 1: Previous Year Pending
-  if (newPrevPending > 0) {
-    const deduction = Math.min(remaining, newPrevPending);
-    prevPaid = deduction;
-    newPrevPending -= deduction;
-    remaining -= deduction;
+  // If no carryForwardPending map but legacy previousYearPending > 0
+  if ((!member.carryForwardPending || Object.keys(member.carryForwardPending).length === 0) && (member.previousYearPending || 0) > 0) {
+    newCarryForward['legacy'] = member.previousYearPending || 0;
   }
+
+  // Step 1: Multi-season FIFO across carryForwardPending debts chronologically
+  const pastSeasons = Object.keys(newCarryForward).sort();
+  for (const sId of pastSeasons) {
+    if (remaining <= 0) break;
+    const debt = newCarryForward[sId] || 0;
+    if (debt > 0) {
+      const deduction = Math.min(remaining, debt);
+      prevPaid += deduction;
+      newCarryForward[sId] = debt - deduction;
+      remaining -= deduction;
+      carryForwardDeductions[sId] = deduction;
+    }
+  }
+
+  const updatedPrevPending = Object.values(newCarryForward).reduce((sum, v) => sum + (v || 0), 0);
 
   // Step 2 & 3: Allocate to chronological unblocked months
   const newPayments = { ...(member.payments || {}) };
@@ -417,7 +469,9 @@ function allocateMemberPayment(member, season, amount) {
 
   return {
     previousYearPaid: prevPaid,
-    remainingPreviousPending: newPrevPending,
+    remainingPreviousPending: updatedPrevPending,
+    carryForwardPending: newCarryForward,
+    carryForwardDeductions,
     monthAllocations,
     totalSeasonAllocated,
     newMemberPayments: newPayments,
@@ -568,21 +622,21 @@ function parseTransactionLine(line, members = [], buildings = []) {
 // =========================================================================
 
 async function executeTransactions(env, parsedItems) {
-  const [season, members, buildings] = await Promise.all([
-    getActiveSeason(env),
-    getMembers(env),
-    getBuildings(env),
-  ]);
-
+  const season = await getActiveSeason(env);
   if (!season) {
     return '⚠️ <b>No Active Season Found:</b> Please initialize an active season in Firestore first.';
   }
+
+  const [members, buildings] = await Promise.all([
+    getMembers(env, season.id),
+    getBuildings(env, season.id),
+  ]);
 
   const { dateStr, timeStr } = nowIST();
   const results = [];
 
   for (const item of parsedItems) {
-    const seq = await getNextSequenceNumber(env);
+    const seq = await getNextSequenceNumber(env, season.id);
     const txnId = `txn-${Date.now()}-${seq}`;
     const mode = item.isOnline ? 'ONLINE' : 'OFFLINE';
 
@@ -594,6 +648,7 @@ async function executeTransactions(env, parsedItems) {
       const updatedMember = {
         ...member,
         previousYearPending: alloc.remainingPreviousPending,
+        carryForwardPending: alloc.carryForwardPending,
         payments: alloc.newMemberPayments,
       };
 
@@ -601,6 +656,7 @@ async function executeTransactions(env, parsedItems) {
         id: txnId,
         sequenceNumber: seq,
         timestamp: new Date().toISOString(),
+        seasonId: season.id,
         type: 'MEMBER',
         amount: item.amount,
         mode,
@@ -611,6 +667,9 @@ async function executeTransactions(env, parsedItems) {
           memberId: member.id,
           memberName: member.name,
           category: 'Member Due',
+          seasonId: season.id,
+          allocations: alloc.monthAllocations,
+          carryForwardDeductions: Object.keys(alloc.carryForwardDeductions).length > 0 ? alloc.carryForwardDeductions : undefined,
         },
       };
 
@@ -627,9 +686,9 @@ async function executeTransactions(env, parsedItems) {
       };
 
       await Promise.all([
-        saveDocument(env, 'members', member.id, updatedMember),
-        saveDocument(env, 'transactions', txn.id, txn),
-        saveDocument(env, 'auditLogs', audit.id, audit),
+        saveDocument(env, 'members', member.id, updatedMember, season.id),
+        saveDocument(env, 'transactions', txn.id, txn, season.id),
+        saveDocument(env, 'auditLogs', audit.id, audit, season.id),
       ]);
 
       // Mirror to Google Sheets
@@ -683,6 +742,7 @@ async function executeTransactions(env, parsedItems) {
         id: txnId,
         sequenceNumber: seq,
         timestamp: new Date().toISOString(),
+        seasonId: season.id,
         type: 'BUILDING',
         amount: item.amount,
         mode,
@@ -693,6 +753,7 @@ async function executeTransactions(env, parsedItems) {
           buildingCode: building.code,
           flatNo: item.room,
           category: 'Building Chanda',
+          seasonId: season.id,
         },
       };
 
@@ -709,9 +770,9 @@ async function executeTransactions(env, parsedItems) {
       };
 
       await Promise.all([
-        saveDocument(env, 'buildings', building.code, updatedBuilding),
-        saveDocument(env, 'transactions', txn.id, txn),
-        saveDocument(env, 'auditLogs', audit.id, audit),
+        saveDocument(env, 'buildings', building.code, updatedBuilding, season.id),
+        saveDocument(env, 'transactions', txn.id, txn, season.id),
+        saveDocument(env, 'auditLogs', audit.id, audit, season.id),
       ]);
 
       await appendSheetRow(env, [
@@ -735,13 +796,14 @@ async function executeTransactions(env, parsedItems) {
         id: txnId,
         sequenceNumber: seq,
         timestamp: new Date().toISOString(),
+        seasonId: season.id,
         type: 'CHANDA',
         amount: item.amount,
         mode,
         status: 'ACTIVE',
         description: `Chanda: ${item.name}`,
         source: 'TELEGRAM',
-        metadata: { category: 'General Chanda' },
+        metadata: { category: 'General Chanda', seasonId: season.id },
       };
 
       const audit = {
@@ -757,8 +819,8 @@ async function executeTransactions(env, parsedItems) {
       };
 
       await Promise.all([
-        saveDocument(env, 'transactions', txn.id, txn),
-        saveDocument(env, 'auditLogs', audit.id, audit),
+        saveDocument(env, 'transactions', txn.id, txn, season.id),
+        saveDocument(env, 'auditLogs', audit.id, audit, season.id),
       ]);
 
       await appendSheetRow(env, [
@@ -782,13 +844,14 @@ async function executeTransactions(env, parsedItems) {
         id: txnId,
         sequenceNumber: seq,
         timestamp: new Date().toISOString(),
+        seasonId: season.id,
         type: 'EXPENSE',
         amount: item.amount,
         mode,
         status: 'ACTIVE',
         description: item.name,
         source: 'TELEGRAM',
-        metadata: { category: 'Expense' },
+        metadata: { category: 'Expense', seasonId: season.id },
       };
 
       const audit = {
@@ -804,8 +867,8 @@ async function executeTransactions(env, parsedItems) {
       };
 
       await Promise.all([
-        saveDocument(env, 'transactions', txn.id, txn),
-        saveDocument(env, 'auditLogs', audit.id, audit),
+        saveDocument(env, 'transactions', txn.id, txn, season.id),
+        saveDocument(env, 'auditLogs', audit.id, audit, season.id),
       ]);
 
       await appendSheetRow(env, [
@@ -833,7 +896,8 @@ async function executeTransactions(env, parsedItems) {
 // =========================================================================
 
 async function executeUndo(env, targetSeq) {
-  const txns = await getTransactions(env, 300);
+  const season = await getActiveSeason(env);
+  const txns = await getTransactions(env, season?.id, 300);
   const activeTxns = txns.filter(t => t.status === 'ACTIVE');
 
   if (activeTxns.length === 0) {
@@ -856,13 +920,12 @@ async function executeUndo(env, targetSeq) {
     ...targetTxn,
     status: 'REVERSED',
   };
-  await saveDocument(env, 'transactions', targetTxn.id, reversedTxn);
+  await saveDocument(env, 'transactions', targetTxn.id, reversedTxn, season?.id);
 
   // 2. Rollback state in members or buildings if applicable
-  const [season, members, buildings] = await Promise.all([
-    getActiveSeason(env),
-    getMembers(env),
-    getBuildings(env),
+  const [members, buildings] = await Promise.all([
+    getMembers(env, season?.id),
+    getBuildings(env, season?.id),
   ]);
 
   if (targetTxn.type === 'MEMBER') {
@@ -883,12 +946,24 @@ async function executeUndo(env, targetSeq) {
         newPayments[m] = cur - dec;
         remainingToDeduct -= dec;
       }
+
+      // Restore past carry forward debt if deducted
+      const newCarryForward = member.carryForwardPending ? { ...member.carryForwardPending } : {};
+      if (targetTxn.metadata?.carryForwardDeductions) {
+        for (const [sId, ded] of Object.entries(targetTxn.metadata.carryForwardDeductions)) {
+          newCarryForward[sId] = (newCarryForward[sId] || 0) + (ded || 0);
+        }
+      } else if (remainingToDeduct > 0) {
+        newCarryForward['legacy'] = (newCarryForward['legacy'] || 0) + remainingToDeduct;
+      }
+
       const updatedMember = {
         ...member,
-        previousYearPending: (member.previousYearPending || 0) + remainingToDeduct,
+        previousYearPending: Object.values(newCarryForward).reduce((s, v) => s + (v || 0), 0),
+        carryForwardPending: newCarryForward,
         payments: newPayments,
       };
-      await saveDocument(env, 'members', member.id, updatedMember);
+      await saveDocument(env, 'members', member.id, updatedMember, season?.id);
     }
   } else if (targetTxn.type === 'BUILDING' && targetTxn.metadata?.buildingCode && targetTxn.metadata?.flatNo) {
     const bCode = targetTxn.metadata.buildingCode;
@@ -912,7 +987,7 @@ async function executeUndo(env, targetSeq) {
           }),
         })),
       };
-      await saveDocument(env, 'buildings', bld.code, updatedBld);
+      await saveDocument(env, 'buildings', bld.code, updatedBld, season?.id);
     }
   }
 
@@ -928,7 +1003,7 @@ async function executeUndo(env, targetSeq) {
     source: 'TELEGRAM',
     notes: `Reversed transaction #${targetTxn.sequenceNumber} (${targetTxn.description}) non-destructively.`,
   };
-  await saveDocument(env, 'auditLogs', audit.id, audit);
+  await saveDocument(env, 'auditLogs', audit.id, audit, season?.id);
 
   // 4. Note in Google Sheets
   const { dateStr, timeStr } = nowIST();
@@ -966,13 +1041,12 @@ function cleanTxnDescription(desc) {
 }
 
 async function getDashboardSummary(env) {
-  const [season, txns] = await Promise.all([
-    getActiveSeason(env),
-    getTransactions(env, 300),
-  ]);
+  const season = await getActiveSeason(env);
+  const txns = await getTransactions(env, season?.id, 300);
 
   const activeTxns = txns.filter(t => t.status === 'ACTIVE');
-  const opening = season?.openingBalance || 6500;
+  const openingCash = season?.openingCashBalance ?? season?.openingBalance ?? 6500;
+  const openingOnline = season?.openingOnlineBalance ?? 0;
 
   let onlineIn = 0, offlineIn = 0, onlineExp = 0, offlineExp = 0;
   for (const t of activeTxns) {
@@ -987,15 +1061,15 @@ async function getDashboardSummary(env) {
 
   const totalIn = onlineIn + offlineIn;
   const totalExp = onlineExp + offlineExp;
-  const netOnline = onlineIn - onlineExp;
+  const netOnline = openingOnline + onlineIn - onlineExp;
   const netOffline = offlineIn - offlineExp;
-  const cashInHand = opening + netOffline;
+  const cashInHand = openingCash + netOffline;
   const netTotal = cashInHand + netOnline;
 
   const sheetId = env.SPREADSHEET_ID || '1kQUxPKTQouLIFm3PB4TXj3XFcMh3RXNy2PT50rIqXQs';
 
-  return `<b>Mandal Summary</b>\n\n` +
-         `Opening Cash: ${formatINR(opening)}\n\n` +
+  return `<b>Mandal Summary (${season?.name || 'Active Season'})</b>\n\n` +
+         `Opening Cash: ${formatINR(openingCash)} · Opening UPI: ${formatINR(openingOnline)}\n\n` +
          `Online: ${formatINR(netOnline)}\n` +
          `Cash: ${formatINR(cashInHand)}\n\n` +
          `<b>Total: ${formatINR(netTotal)}</b>\n\n` +
@@ -1004,12 +1078,10 @@ async function getDashboardSummary(env) {
 }
 
 async function getMemberDuesList(env) {
-  const [season, members] = await Promise.all([
-    getActiveSeason(env),
-    getMembers(env),
-  ]);
-
+  const season = await getActiveSeason(env);
   if (!season) return '⚠️ No active season found.';
+
+  const members = await getMembers(env, season.id);
 
   const summaries = members
     .filter(m => !m.isHonorary)
@@ -1033,7 +1105,8 @@ async function getMemberDuesList(env) {
 }
 
 async function getPaginatedTransactions(env, filterType, filterMode, title, showMode = true) {
-  const txns = await getTransactions(env, 300);
+  const season = await getActiveSeason(env);
+  const txns = await getTransactions(env, season?.id, 300);
   let filtered = txns.filter(t => t.status === 'ACTIVE');
 
   if (filterType === 'INCOME') filtered = filtered.filter(t => t.type !== 'EXPENSE');
@@ -1300,7 +1373,8 @@ async function handleTelegramMessage(env, msg) {
     );
 
     try {
-      const [members, buildings] = await Promise.all([getMembers(env), getBuildings(env)]);
+      const season = await getActiveSeason(env);
+      const [members, buildings] = await Promise.all([getMembers(env, season?.id), getBuildings(env, season?.id)]);
       const audioData = await downloadTelegramAudio(env, voiceObj.file_id);
       const result = await transcribeVoiceToCommands(
         env,
@@ -1429,7 +1503,8 @@ async function handleTelegramMessage(env, msg) {
     const memberCheckMatch = lower.match(/^(?:due|status|check)?\s*([a-zA-Z\.\s_]+)$/);
     if (memberCheckMatch) {
       const candidate = memberCheckMatch[1].trim();
-      const [season, members] = await Promise.all([getActiveSeason(env), getMembers(env)]);
+      const season = await getActiveSeason(env);
+      const members = await getMembers(env, season?.id);
       const matched = members.find(m => m.name.toLowerCase().replace(/\./g, '') === candidate.replace(/\./g, ''));
       if (matched && season) {
         const d = computeMemberDues(matched, season);
@@ -1445,7 +1520,8 @@ async function handleTelegramMessage(env, msg) {
 
     // 12. Transaction Entry (Single or Multi-line)
     const lines = rawText.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-    const [members, buildings] = await Promise.all([getMembers(env), getBuildings(env)]);
+    const season = await getActiveSeason(env);
+    const [members, buildings] = await Promise.all([getMembers(env, season?.id), getBuildings(env, season?.id)]);
 
     const parsedItems = [];
     const unparsed = [];

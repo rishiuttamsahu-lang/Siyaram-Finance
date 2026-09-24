@@ -28,7 +28,7 @@ interface AdminTransactionsProps {
   setIsAddModalOpen?: (open: boolean) => void;
 }
 
-type FilterCategory = 'ALL' | 'INCOME' | 'EXPENSE' | 'MEMBERS' | 'FLATS';
+type FilterCategory = 'ALL' | 'INCOME' | 'CHANDA' | 'EXPENSE' | 'MEMBERS' | 'FLATS';
 
 export const AdminTransactions: React.FC<AdminTransactionsProps> = ({
   season,
@@ -119,8 +119,9 @@ export const AdminTransactions: React.FC<AdminTransactionsProps> = ({
       String(t.sequenceNumber).includes(searchQuery);
     if (!matchesSearch) return false;
 
-    // Category filter: All / Income / Expense / Members / Flats
+    // Category filter: All / Income / Chanda / Expense / Members / Flats
     if (categoryFilter === 'INCOME' && t.type === 'EXPENSE') return false;
+    if (categoryFilter === 'CHANDA' && t.type !== 'CHANDA') return false;
     if (categoryFilter === 'EXPENSE' && t.type !== 'EXPENSE') return false;
     if (categoryFilter === 'MEMBERS' && t.type !== 'MEMBER') return false;
     if (categoryFilter === 'FLATS' && t.type !== 'BUILDING') return false;
@@ -206,6 +207,7 @@ export const AdminTransactions: React.FC<AdminTransactionsProps> = ({
   const filterTabs: { id: FilterCategory; label: string }[] = [
     { id: 'ALL', label: 'All' },
     { id: 'INCOME', label: 'Income' },
+    { id: 'CHANDA', label: 'Chanda' },
     { id: 'EXPENSE', label: 'Expense' },
     { id: 'MEMBERS', label: 'Members' },
     { id: 'FLATS', label: 'Flats' },

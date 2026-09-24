@@ -59,6 +59,13 @@ interface AdminTabProps {
   onSetLiveSeason?: (draftSeasonId: string) => void;
   onTogglePauseMember?: (member: Member) => void;
   onDeleteSeason?: (seasonId: string) => void;
+  onDeployNewSeason?: (
+    newSeason: Season,
+    newMembers: Member[],
+    newBuildings: Building[],
+    archiveCurrent: boolean
+  ) => Promise<void>;
+  onSelectSeason?: (seasonId: string) => void;
 }
 
 export type AdminSubTab = 
@@ -107,6 +114,8 @@ export const AdminTab: React.FC<AdminTabProps> = ({
   onSetLiveSeason,
   onTogglePauseMember,
   onDeleteSeason,
+  onDeployNewSeason,
+  onSelectSeason,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<AdminSubTab>('dashboard');
 
@@ -301,6 +310,8 @@ export const AdminTab: React.FC<AdminTabProps> = ({
           onSetLiveSeason={onSetLiveSeason}
           onTogglePauseMember={onTogglePauseMember}
           onDeleteSeason={onDeleteSeason}
+          onDeployNewSeason={onDeployNewSeason}
+          onSelectSeason={onSelectSeason}
           isCreateModalOpen={isNewSeasonModalOpen}
           setIsCreateModalOpen={setIsNewSeasonModalOpen}
           onNavigateTab={(tabId: string) => setActiveSubTab(tabId as AdminSubTab)}
